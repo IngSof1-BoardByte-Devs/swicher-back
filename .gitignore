@@ -1,0 +1,11 @@
+# Ignorar archivos innecesarios
+/venv
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+/.vscode
+.sqlite
+dist/
+build/
+.pytest_cache/
