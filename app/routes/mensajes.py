@@ -1,3 +1,7 @@
+"""
+Este archivo es meramente demostrativo y va a implosionar a medida que se hagan los primeros endpoints
+"""
+""" 
 from fastapi import APIRouter
 from app.database.models import Player, Mensaje
 from pony.orm import db_session, select, commit
@@ -34,4 +38,4 @@ async def borrar_mensajes(id: int, username: str):
                 commit()
                 return {"mensaje": "Mensaje eliminado"}
             return {"mensaje": "Mensaje no encontrado"}
-    return {"error": "Jugador no encontrado"}
+    return {"error": "Jugador no encontrado"} """

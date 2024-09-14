@@ -5,23 +5,7 @@ sesiones controladas de la base de datos.
 """
 
 from pony.orm import db_session
-from app.database.models import player
-
-@db_session
-def get_player_by_username(username: str):
-    return player.get(username=username)
-
-@db_session
-def get_player_by_id(id: int):
-    return player.get(id=id)
-
-@db_session
-def create_player(username: str, password: str):
-    player(username=username, password=password)
-
-@db_session
-def delete_player(id: int):
-    player[id].delete()
+from app.database.models import player, game
 
 
 
