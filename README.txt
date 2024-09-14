@@ -3,18 +3,75 @@
     $ python -m venv env
     $ source venv/bin/activate
 - Instalar las dependencias (Pararse en la carpeta swicher-back):
-    $ pip install -r requirements.txt
+    $ pip install -r requeriments.txt
 - Para correr el servidor (Pararse en la carpeta swicher-back):
     $ uvicorn app.main:app --reload
 
 
+Contrato de la API:
 
+POST /create-game
+Crea una nueva partida.
+Request Body: {"player_name": "string", "game_name": "string"}
+Response:
+200 OK: {"status": "OK", "game_id": "string"}
+400 ERROR: {"status": "ERROR", "message": "string"}
 
--tener instalado python
--entrar al entorno virtual
--pip install fastapi uvicorn 
--pip freeze > requeriments.txt //sirve para poner las versiones de las cosas en un archivo xd
+GET /games
+Devuelve una lista de partidas disponibles.
+Response:
+200 OK: [
+{ "game_id": "string", "game_name": "string",
+"players": [ { "player_nickname": "string", "is_owner": "boolean" } ]
+}, ... ]
 
--Para ejecutar pararse en la carpeta app (o donde se encuentra main)
--Ejecutar $uvicorn main:app  (si se le agrega --reload se recargan los cambios al guardar sin tener que bajar y levatar el server)
--Para ver la documentación ir a http://127.0.0.1:8000/docs (o /redoc) con el server levantado
+POST /join-game
+Permite a un jugador unirse a una partida.
+Request Body: {"player_nickname": "string", "game_id": "int"}
+Response:
+200 OK: {"status": "OK"}
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+POST /leave-game
+Permite a un jugador abandonar una partida.
+Request Body: {"player_id": "int", "game_id": "int"}
+Response:
+200 OK: {"status": "OK"}
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+POST /start-game
+Inicia una partida.
+Request Body: {"player_id": "string", "game_id": "string"}
+Response:
+200 OK: {"status": "OK"}
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+GET /movement-cards
+Devuelve las cartas de movimiento de un jugador.
+Request Body: {"player_id": "int"}
+Response:
+200 OK: [ { "card_id": "int", "movement_type": "string" }, ... ]
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+GET /figure-cards
+Devuelve las cartas de figura asociadas a una partida.
+Request Body: {"player_id": "int"}
+Response:
+200 OK: [ { "card_id": "int", "figure_type": "string" }, ... ]
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+GET /board
+Devuelve el estado del tablero de la partida.
+Request Body: {"player_id": "int"}
+Response:
+200 OK: { "game_id": "int", "board_state": [
+{ "figure_id": "int", "position": { "x": "int", "y": "int" } }, ... ]
+}
+400 ERROR: {"status": "ERROR", "message": "string"}
+
+POST /end-turn
+Finaliza el turno de un jugador.
+Request Body: {"player_id": "int", "game_id": "int"}
+Response:
+200 OK: {"status": "OK"}
+400 ERROR: {"status": "ERROR", "message": "string"}
