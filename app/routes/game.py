@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.schemas.game import GameOut
 from app.database.models import Game
 from pony.orm import db_session, select
+from app.database.crud import fetch_games
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ async def get_games():
         list[GameOut]: Lista de juegos que no han comenzado.
     """
     with db_session():
-        games = select(g for g in Game if g.started == False)[:]
+        games = fetch_games()
         games = [GameOut(id=g.id, name=g.name, 
-                        players=[p.username for p in g.players]) for g in games]
+                        players=[p.username for p in g.players]) for g in games if not g.started]
     return games

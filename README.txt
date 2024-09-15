@@ -1,6 +1,6 @@
 - Tener instalado python
 - Crear un entorno virtual:
-    $ python -m venv env
+    $ python -m venv venv
     $ source venv/bin/activate
 - Instalar las dependencias (Pararse en la carpeta swicher-back):
     $ pip install -r requeriments.txt
@@ -14,15 +14,15 @@ POST /create-game
 Crea una nueva partida.
 Request Body: {"player_name": "string", "game_name": "string"}
 Response:
-200 OK: {"status": "OK", "game_id": "string"}
+200 OK: {"status": "OK", "game_id": "int"}
 400 ERROR: {"status": "ERROR", "message": "string"}
 
 GET /games
 Devuelve una lista de partidas disponibles.
 Response:
 200 OK: [
-{ "game_id": "string", "game_name": "string",
-"players": [ { "player_nickname": "string", "is_owner": "boolean" } ]
+{ "game_id": "int", "game_name": "string",
+"players": [ { "player_nickname": "string" } ]
 }, ... ]
 
 POST /join-game
@@ -41,7 +41,7 @@ Response:
 
 POST /start-game
 Inicia una partida.
-Request Body: {"player_id": "string", "game_id": "string"}
+Request Body: {"player_id": "int", "game_id": "int"}
 Response:
 200 OK: {"status": "OK"}
 400 ERROR: {"status": "ERROR", "message": "string"}

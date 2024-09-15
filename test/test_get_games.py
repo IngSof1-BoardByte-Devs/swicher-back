@@ -15,6 +15,10 @@ def insert_test_games():
         player2 = Player(username="Player 1", game=game)
     
     print(game.players)
+def test_get_games_empty_db():
+    response = client.get("/game/get_games")
+    assert response.status_code == 200
+    assert response.json() == []
 
 def test_get_games_from_db():
     # Insert test games
@@ -23,4 +27,16 @@ def test_get_games_from_db():
     # Test the endpoint
     response = client.get("/game/get_games")
     assert response.status_code == 200
-    assert response.json() == [{'id': 1, "name": "Test Game 1", "players": ["Player 1", "Player 2"]}]
+    assert response.json() == [
+        {
+            "id": 1,
+            "name": "Test Game 1",
+            "players": ["Player 1", "Player 2"]
+        }
+    ] or response.json() == [
+        {
+            "id": 1,
+            "name": "Test Game 1",
+            "players": ["Player 2", "Player 1"]
+        }
+    ]

@@ -9,4 +9,3 @@ class GameOut(BaseModel):
     id: int
     name: str
     players: list
-

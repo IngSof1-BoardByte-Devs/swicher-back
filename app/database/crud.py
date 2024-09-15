@@ -5,9 +5,11 @@ sesiones controladas de la base de datos.
 """
 
 from pony.orm import db_session
-from app.database.models import player, game
+from app.database.models import Game, Player
 
-
+@db_session
+def fetch_games():
+    return Game.select()
 
 """ 
 Usar @db_session cuando toda la función realiza operaciones con la base de datos, simplificando la gestión 
