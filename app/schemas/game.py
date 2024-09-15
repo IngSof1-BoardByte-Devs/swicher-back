@@ -5,6 +5,8 @@ y manejar los datos que se envían y reciben en las peticiones HTTP.
 
 from pydantic import BaseModel
 
-class CreateGame(BaseModel):
+class GameOut(BaseModel):
+    id: int
     name: str
-    description: str
+    players: list
+
