@@ -1,33 +1,26 @@
-# Mocking the test_client to test the get_games endpoint
-
 from fastapi.testclient import TestClient
+from app.database.models import Game, Player
 from test.test_main import app_test
-from unittest.mock import patch
-
+from pony.orm import db_session
 
 client = TestClient(app=app_test)
 
-@patch("app.routes.game.get_games")
-def test_get_games(mock_get_games):
-    # Define some mock games to return
-    mock_games = [
-        {"id": 1, "name": "Game 1", "players": ["Player 1", "Player 2"]},
-        {"id": 2, "name": "Game 2", "players": ["Player 3", "Player 4"]}
-    ]
+def insert_test_games():
+    with db_session:
+        # Create a game
+        game = Game(name="Test Game 1")
+        
+        # Create the players and assign them to the game
+        player1 = Player(username="Player 2", game=game)
+        player2 = Player(username="Player 1", game=game)
+    
+    print(game.players)
 
-    # Configure the mock to return the mock games
-    mock_get_games.return_value = mock_games
+def test_get_games_from_db():
+    # Insert test games
+    insert_test_games()
 
-    # Call the endpoint
-    response = client.get("/game/get_games")
-
-    # Assert that the status code is 200
-    assert response.status_code == 200
-
-    # Assert that the returned games match the mock games
-    assert response.json() == mock_games
-
-def test_get_games():
+    # Test the endpoint
     response = client.get("/game/get_games")
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json() == [{'id': 1, "name": "Test Game 1", "players": ["Player 1", "Player 2"]}]
