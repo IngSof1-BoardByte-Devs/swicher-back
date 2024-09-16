@@ -9,3 +9,7 @@ class GameOut(BaseModel):
     id: int
     name: str
     players: list
+
+class CreateGame(BaseModel):
+    name: str
+    host: list
