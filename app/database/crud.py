@@ -8,6 +8,24 @@ from pony.orm import db_session
 from app.database.models import player, game
 
 
+@db_session
+def create_game(name: str) -> Game:
+    new_game = Game(name=name)
+    return new_game
+
+@db_session
+def create_player(username: str, game: Game) -> Player:
+    new_player = Player(username=username, game=game)
+    return new_player
+
+@db_session
+def fetch_games():
+    return Game.select()
+
+@db_session
+def put_host(game: Game, player: Player):
+    game.host = player
+
 
 """ 
 Usar @db_session cuando toda la función realiza operaciones con la base de datos, simplificando la gestión 
