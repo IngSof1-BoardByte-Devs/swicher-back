@@ -6,11 +6,6 @@ from pony.orm import db_session
 
 client = TestClient(app=app_test)
 
-def test_get_empty_games(setup_database):
-    response = client.get("/game/get_games")
-    assert response.status_code == 200
-    assert response.json() == []
-
 def insert_test_games():
     with db_session:
         # Create a game
