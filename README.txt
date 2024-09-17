@@ -1,11 +1,13 @@
-- Tener instalado python
+- Instalar instalado python
+    ` sudo apt-get install python3`
+    ` sudo apt-get install python3-pip`
 - Crear un entorno virtual:
     $ python -m venv venv
     $ source venv/bin/activate
 - Instalar las dependencias (Pararse en la carpeta swicher-back):
-    $ pip install -r requeriments.txt
+    ` pip install -r requeriments.txt`
 - Para correr el servidor (Pararse en la carpeta swicher-back):
-    $ uvicorn app.main:app --reload
+    ` uvicorn app.main:app --reload`
 
 
 Contrato de la API:
@@ -21,15 +23,14 @@ GET /games
 Devuelve una lista de partidas disponibles.
 Response:
 200 OK: [
-{ "game_id": "int", "game_name": "string",
-"players": [ { "player_nickname": "string" } ]
+{ "game_id": "string", "game_name": "string", "num_players": "int"
 }, ... ]
 
 POST /join-game
 Permite a un jugador unirse a una partida.
-Request Body: {"player_nickname": "string", "game_id": "int"}
+Request Body: {"player_name": "string", "game_id": "int"}
 Response:
-200 OK: {"status": "OK"}
+201 CREATE: {"status": "OK"}
 400 ERROR: {"status": "ERROR", "message": "string"}
 
 POST /leave-game
@@ -71,7 +72,7 @@ Response:
 
 POST /end-turn
 Finaliza el turno de un jugador.
-Request Body: {"player_id": "int", "game_id": "int"}
+Request Body: {"player_id": "int"}
 Response:
 200 OK: {"status": "OK"}
 400 ERROR: {"status": "ERROR", "message": "string"}

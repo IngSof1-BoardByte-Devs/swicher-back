@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Inicializando la base de datos
-config_database(test=False)
+config_database()
 
 # Incluyendo las rutas
 """ app.include_router(mensajes.router, prefix="") """

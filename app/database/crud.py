@@ -5,7 +5,8 @@ sesiones controladas de la base de datos.
 """
 
 from pony.orm import db_session
-from app.database.models import Game, Player
+from app.database.models import Player, Game
+
 
 @db_session
 def create_game(name: str) -> Game:
