@@ -26,7 +26,6 @@ def fetch_games():
 def put_host(game: Game, player: Player):
     game.host = player
 
-
 """ 
 Usar @db_session cuando toda la función realiza operaciones con la base de datos, simplificando la gestión 
 de la sesión.

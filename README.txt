@@ -2,8 +2,8 @@
     ` sudo apt-get install python3`
     ` sudo apt-get install python3-pip`
 - Crear un entorno virtual:
-    ` python -m venv env`
-    ` source venv/bin/activate`
+    $ python -m venv venv
+    $ source venv/bin/activate
 - Instalar las dependencias (Pararse en la carpeta swicher-back):
     ` pip install -r requeriments.txt`
 - Para correr el servidor (Pararse en la carpeta swicher-back):
@@ -16,7 +16,7 @@ POST /create-game
 Crea una nueva partida.
 Request Body: {"player_name": "string", "game_name": "string"}
 Response:
-201 CREATE: {"status": "OK", "game_id": "string"}
+200 OK: {"status": "OK", "game_id": "int"}
 400 ERROR: {"status": "ERROR", "message": "string"}
 
 GET /games
@@ -42,7 +42,7 @@ Response:
 
 POST /start-game
 Inicia una partida.
-Request Body: {"player_id": "id", "game_id": "id"}
+Request Body: {"player_id": "int", "game_id": "int"}
 Response:
 200 OK: {"status": "OK"}
 400 ERROR: {"status": "ERROR", "message": "string"}
