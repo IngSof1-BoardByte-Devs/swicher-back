@@ -10,7 +10,6 @@ class GameOut(BaseModel):
     name: str
     players: list
 
-
 class CreateGame(BaseModel):
     name: str
     host: list
