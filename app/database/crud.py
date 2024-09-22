@@ -26,6 +26,15 @@ def fetch_games():
 def put_host(game: Game, player: Player):
     game.host = player
 
+@db_session
+def leave_game(player: Player, game: Game):
+    if player.host_game == game:
+        #si el jugador es el host del juego, se elimina el juego y a los jugadores
+        game.delete()
+    else:
+        #eliminar al jugador de la lista de jugadores del juego
+        game.players.remove(player)
+        player.delete()
 """ 
 Usar @db_session cuando toda la función realiza operaciones con la base de datos, simplificando la gestión 
 de la sesión.

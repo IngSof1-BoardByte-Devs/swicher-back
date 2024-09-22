@@ -13,3 +13,18 @@ class GameOut(BaseModel):
 class CreateGame(BaseModel):
     name: str
     host: list
+
+class LeaveStartGame(BaseModel):
+    player_id: int
+    game_id: int
+
+class PlayerTest(BaseModel):
+    id: int
+    username: str
+    game: int
+    host_game: int
+
+class GameTest(BaseModel):
+    id: int
+    name: str
+    players: list
