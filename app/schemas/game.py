@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class GameOut(BaseModel):
     id: int
     name: str
-    players: list
+    num_players: int
 
 class CreateGame(BaseModel):
     name: str

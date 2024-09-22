@@ -4,5 +4,11 @@ Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es d
 funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
 """
 
-def game_status():
-    return {"status": "El juego está en curso"}
+from app.database.crud import fetch_games
+from app.schemas.game import GameOut
+from typing import List
+
+class GameService:
+    def get_all_games(self) -> List[GameOut]:
+        games = fetch_games()
+        return [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games]
