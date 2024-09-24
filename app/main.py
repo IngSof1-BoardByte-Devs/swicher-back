@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from app.routes import game, mensajes, player
+from app.routes import game
 from app.core.websocket import websocket_handler
-from app.database.session import config_database
 from fastapi.websockets import WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+import app.database.models as model # importamos todos los modelos dentro del archivo
+from app.database.session import engine
 
 app = FastAPI()
 
@@ -17,12 +18,10 @@ app.add_middleware(
 )
 
 # Inicializando la base de datos
-config_database()
+model.Base.metadata.create_all(bind=engine)
 
 # Incluyendo las rutas
-""" app.include_router(mensajes.router, prefix="") """
 app.include_router(game.router, prefix="/game")
-app.include_router(player.router, prefix="/player")
 
 # WebSocket endpoint
 @app.websocket("/ws")
