@@ -13,8 +13,8 @@ def create_game(db: Session, name: str) -> Game:
     db.commit()
     return new_game
 
-def create_player(db: Session, username: str, game: Game) -> Player:
-    new_player = Player(username=username, game=game)
+def create_player(db: Session, username: str) -> Player:
+    new_player = Player(username=username)
     db.add(new_player)
     db.commit()
     return new_player
