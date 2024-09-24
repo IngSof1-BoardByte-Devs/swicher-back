@@ -7,8 +7,12 @@ funciones que realizan operaciones más complejas y que no están directamente r
 from app.database.crud import fetch_games
 from app.schemas.game import GameOut
 from typing import List
+from sqlalchemy.orm import Session
 
 class GameService:
+    def __init__(self, db: Session):
+        self.db = db
+
     def get_all_games(self) -> List[GameOut]:
-        games = fetch_games()
+        games = fetch_games(self.db)  # Aquí se pasa la sesión a la operación de la base de datos
         return [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games]

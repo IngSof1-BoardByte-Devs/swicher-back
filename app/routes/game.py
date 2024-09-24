@@ -6,18 +6,20 @@ petición en un endpoint específico.
 from fastapi import APIRouter, Depends
 from app.schemas.game import GameOut
 from app.services.game import GameService
+from app.database.session import get_db  # Importa la función para obtener la sesión
+from sqlalchemy.orm import Session
 from typing import List
 from fastapi import HTTPException
 import logging
 
 router = APIRouter()
 
-
 @router.get("/get_games", response_model=List[GameOut])
-async def get_games(service: GameService = Depends()):
+async def get_games(db: Session = Depends(get_db)):
     """
     Obtiene los juegos que no han comenzado.
     """
+    service = GameService(db)  # Crea la instancia del servicio con la sesión inyectada
     try:
         return service.get_all_games()
     except Exception as e:

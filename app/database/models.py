@@ -1,24 +1,24 @@
-"""
-Acá se definen las entidades o modelos de la base de datos, es decir, las tablas y sus relaciones. 
-Se utiliza la instancia db creada en session.py para asociar las entidades a la base de datos.
-"""
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base
 
-from pony.orm import Required, Set, Optional
-from app.database.session import db
+Base = declarative_base()
 
-# Los nombre tienen que comenzar con mayúscula (salta error si no)
-class Game(db.Entity):
-    name = Required(str)
-    players = Set("Player", reverse="game")
-    started = Required(bool, default=False)
-    turn = Required(int, default=0)
-    host = Optional("Player", reverse="host_game")
-    
-class Player(db.Entity):
-    username = Required(str)
-    game = Required(Game)
-    host_game = Optional(Game)
-    turn = Required(int, default=0)
+class Game(Base):
+    __tablename__ = 'games'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')  # Relación con players, usando game_id como clave foránea
+    started = Column(Boolean, default=False)
+    turn = Column(Integer, default=0)    
+    host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')    # Relación con host, usando host_game_id como clave foránea
 
-""" class Mensaje(db.Entity):
-    mensaje = Required(str) """
+class Player(Base):
+    __tablename__ = 'players'
+    id = Column(Integer, primary_key=True)
+    username = Column(String)   
+    game_id = Column(Integer, ForeignKey('games.id'))   # Clave foránea a la tabla Game para la relación general (game_id)
+    game = relationship("Game", back_populates="players", foreign_keys=[game_id])    
+    host_game_id = Column(Integer, ForeignKey('games.id'))  # Clave foránea para la relación host (host_game_id)
+    host_game = relationship("Game", back_populates="host", foreign_keys=[host_game_id])
+    turn = Column(Integer, default=0)
