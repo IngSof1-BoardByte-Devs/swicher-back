@@ -3,7 +3,6 @@ Services:
 Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es donde implementas las 
 funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
 """
-
 from app.database.crud import *
 from app.schemas.game import GameOut, JoinGame
 from typing import List
@@ -19,8 +18,9 @@ class GameService:
     
     def join_game(self, data: JoinGame):
         game = get_game(self.db, data.game_id)
+        
         if game == None:
             raise Exception("Error: User tries to join a non-existent game")
-        if count_players(self.db, game) > 3:
+        if len(game.players) > 3:
             raise Exception("Error: Maximum players allowed")
         create_player(self.db, data.player_name, game)
