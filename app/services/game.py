@@ -4,8 +4,8 @@ Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es d
 funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
 """
 
-from app.database.crud import fetch_games
-from app.schemas.game import GameOut
+from app.database.crud import *
+from app.schemas.game import GameOut, JoinGame
 from typing import List
 from sqlalchemy.orm import Session
 
@@ -16,3 +16,11 @@ class GameService:
     def get_all_games(self) -> List[GameOut]:
         games = fetch_games(self.db)  # Aquí se pasa la sesión a la operación de la base de datos
         return [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games]
+    
+    def join_game(self, data: JoinGame):
+        game = get_game(self.db, data.game_id)
+        if game == None:
+            raise Exception("Error: User tries to join a non-existent game")
+        if count_players(self.db, game) > 3:
+            raise Exception("Error: Maximum players allowed")
+        create_player(self.db, data.player_name, game)
