@@ -28,6 +28,3 @@ def put_host(db: Session, game: Game, player: Player):
 
 def get_game(db: Session, id: int) -> Game:
     return db.query(Game).get(id)
-
-def count_players(db: Session, game: Game) -> int:
-    return db.query(Player).filter(Player.game_id == game.id).count()
