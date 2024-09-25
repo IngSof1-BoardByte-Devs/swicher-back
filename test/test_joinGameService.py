@@ -56,7 +56,7 @@ class TestGameService(unittest.TestCase):
         self.assertEqual(str(context.exception), "Error: User tries to join a non-existent game")
 
 
-
+    @patch('app.services.game.get_game')
     def test_join_game_max_players_exceeded(self, mock_get_game):
         # Configuración del mock para un juego con 4 jugadores
         mock_game = MagicMock()
