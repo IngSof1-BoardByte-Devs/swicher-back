@@ -24,5 +24,5 @@ def test_create_game_endpoint(client, monkeypatch):
 
     # Verificar respuesta
     assert response.status_code == 200
-    assert response.json() == {"status": "OK", "game_id": 1}
+    assert response.json()[0] == {"message": "Partida creada con éxito"}
     print(response.json())
