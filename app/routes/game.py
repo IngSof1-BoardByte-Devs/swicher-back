@@ -5,7 +5,7 @@ petición en un endpoint específico.
 """
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import CreateGame, GameCreateResponse, GameOut, JoinGame
-from app.services.game import GameService, JoinGameService
+from app.services.game import GameService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
 from typing import List
@@ -41,12 +41,12 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     
 
 @router.post("/join-game")
-async def join_game(game_data: JoinGame):
+async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     Permite a un jugador unirse a una partida.
     """
     try:
-        service = JoinGameService()
+        service = GameService(db)
         service.join_game(game_data)
         return {"status": "OK"}, 201
     except Exception as e:

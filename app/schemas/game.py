@@ -11,8 +11,8 @@ class GameOut(BaseModel):
     num_players: int
 
 class CreateGame(BaseModel):
-    player_name: str
     game_name: str
+    player_name: str
 
 class GameCreateResponse(BaseModel):
     status: str
