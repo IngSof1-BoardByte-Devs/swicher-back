@@ -5,7 +5,7 @@ funciones que realizan operaciones más complejas y que no están directamente r
 """
 
 from app.database.crud import create_game, create_player, fetch_games
-from app.schemas.game import CreateGame, GameOut
+from app.schemas.game import CreateGame, GameOut, JoinGame
 from typing import Dict, List
 from sqlalchemy.orm import Session
 
@@ -23,3 +23,19 @@ class GameService:
         game.host = player
         self.db.commit()
         return {"status": "OK", "game_id": game.id}
+
+class JoinGameService:
+    def __init__(self):
+        pass
+    def join_game(self, game_data: JoinGame) -> Dict:
+        # Lógica de negocio para unirse a una partida
+        # Por ejemplo:
+        if game_data.game_id <= 0:
+            raise ValueError("ID de juego inválido")
+        
+        if not game_data.player_name:
+            raise ValueError("Nombre de jugador requerido")
+        
+        # Simular la lógica de unirse a una partida
+        # En un futuro, aquí se llamaría a la base de datos para actualizar la partida
+        return {"status": "OK", "message": "Jugador unido a la partida con éxito"}
