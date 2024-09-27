@@ -21,6 +21,8 @@ class Game(Base):
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
     host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')
+    movements = relationship("Movement", back_populates="game", cascade="all, delete-orphan")
+    figures = relationship("Figure", back_populates="game", cascade="all, delete-orphan")
 
     # Método para obtener la matriz del tablero
     @property

@@ -40,32 +40,39 @@ class GameService:
     
 
     def start_game(self, game_data: StartGame) -> Dict:
-
+        print("Iniciando juego")
         game = get_game_by_id(self.db, game_data.game_id)
-
+        print("Checkeando errores")
         # Manejo de errores
         if not game:
             raise ValueError("Juego no encontrado")
         elif game.host.id != game_data.player_id:
             raise ValueError("Solo el anfitrión puede iniciar el juego")
-        
+        print("Ver si acá llegó")
         # Actualizar el estado del juego
         put_start_game(self.db, game)
+        print("Ver si acá llegó2")
 
         # Asignar los turnos a los jugadores
         players = List[Player]
+        players = game.players
+        print("Ver si acá llegó3")
         random.shuffle(players)
         for i in range(len(players)):
             player = players[i]
             put_asign_turn(self.db, player, i+1)
+        
+        print("Ver si acá llegó4")
 
         # Crear el mazo de movimientos
         move_service = MoveService(self.db)
         move_service.create_movement_deck(game.id)
+        print("Ver si acá llegó5")
 
         # Crear el mazo de figuras
         figure_service = FigureService(self.db)
         figure_service.create_figure_deck(game.id)
+        print("Ver si acá llegó6")
 
         # Crear el tablero
         board_service = BoardService(self.db)

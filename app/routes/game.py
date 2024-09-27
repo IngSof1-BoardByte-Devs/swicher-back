@@ -4,7 +4,7 @@ Es donde se definen los endpoints y se especifica qué funciones se ejecutarán 
 petición en un endpoint específico.
 """
 from fastapi import APIRouter, Depends, Response
-from app.schemas.game import CreateGame, GameCreateResponse, GameOut, JoinGame
+from app.schemas.game import CreateGame, GameCreateResponse, GameOut, JoinGame, StartGame
 from app.services.game import GameService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
@@ -54,7 +54,7 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})    
     
 @router.post("/start-game")
-async def start_game(game_data: JoinGame, db: Session = Depends(get_db)):
+async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
     """
     Inicia una partida.
     """
