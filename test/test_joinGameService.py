@@ -10,7 +10,8 @@ class TestGameService(unittest.TestCase):
     def test_join_game_success(self,mock_create_player,mock_get_game):
         # Configuración del mock para un juego existente y con menos de 4 jugadores
         mock_game = MagicMock()
-        mock_game.players = ["player1"]
+        mock_game.players.all.return_value = ["player1"]
+        mock_game.started = False
         mock_get_game.return_value = mock_game
 
         # Datos de entrada
@@ -31,7 +32,8 @@ class TestGameService(unittest.TestCase):
     @patch('app.services.game.create_player')
     def test_join_border_game_success(self,mock_create_player, mock_get_game):
         mock_game = MagicMock()
-        mock_game.players = ["player1", "player2", "player3"]
+        mock_game.players.all.return_value = ["player1", "player2", "player3"]
+        mock_game.started = False
         mock_get_game.return_value = mock_game
         
         data = JoinGame(player_name="player4",game_id=1)
@@ -60,7 +62,8 @@ class TestGameService(unittest.TestCase):
     def test_join_game_max_players_exceeded(self, mock_get_game):
         # Configuración del mock para un juego con 4 jugadores
         mock_game = MagicMock()
-        mock_game.players = ["player1", "player2", "player3", "player4"]
+        mock_game.players.all.return_value = ["player1", "player2", "player3", "player4"]
+        mock_game.started = False
         mock_get_game.return_value = mock_game
 
         data = JoinGame(player_name="player5",game_id=1)
