@@ -43,6 +43,16 @@ def delete_player(db: Session, player: Player, game: Game):
         player.delete()
         db.commit()
 
+def delete_all_game(db: Session, game: Game):
+    for movement in game.movements:
+        movement.delete()
+    for figure in game.figures:
+        figure.delete()
+    for player in game.players:
+        player.delete()
+    game.delete()
+    db.commit()
+
 def get_player_by_id(db: Session, player_id: int):
     return db.query(Player).filter(Player.id == player_id).first()
 
