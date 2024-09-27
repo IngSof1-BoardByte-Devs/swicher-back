@@ -21,6 +21,8 @@ class GameService:
         
         if game == None:
             raise Exception("Error: User tries to join a non-existent game")
-        if len(game.players) > 3:
+        elif game.started:
+            raise Exception("Error: The game has already begun")
+        if len(game.players.all()) <= 4:
             raise Exception("Error: Maximum players allowed")
         create_player(self.db, data.player_name, game)
