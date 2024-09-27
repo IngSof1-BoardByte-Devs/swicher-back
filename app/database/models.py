@@ -22,7 +22,7 @@ class Game(Base):
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
     host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')
     movements = relationship("Movement", back_populates="game", cascade="all, delete-orphan")
-    figures = relationship("Figure", back_populates="game", cascade="all, delete-orphan")
+    figures = relationship("Figure", cascade="all, delete-orphan")
 
     # Método para obtener la matriz del tablero
     @property
@@ -75,7 +75,7 @@ class Figure(Base):
     status = Column(Enum(FigureStatus), default=FigureStatus.INDECK)
     
     # Relaciones
-    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
-    player = relationship("Player", back_populates="figures", foreign_keys=[player_id])
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=True)
+    player = relationship("Player", foreign_keys=[player_id], back_populates="figures")
     game_id = Column(Integer, ForeignKey('games.id', ondelete="CASCADE"), nullable=False)
-    game = relationship("Game", back_populates="figures", foreign_keys=[game_id])
+    game = relationship("Game", back_populates="figures")
