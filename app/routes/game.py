@@ -4,12 +4,9 @@ Es donde se definen los endpoints y se especifica qué funciones se ejecutarán 
 petición en un endpoint específico.
 """
 
-from app.schemas.game import GameOut, LeaveStartGame
-from app.database.models import Game
-from pony.orm import db_session, select
-from app.database.crud import fetch_games
-from app.services.game import GameService
 from fastapi import APIRouter, Depends
+from app.schemas.game import GameOut, LeaveStartGame
+from app.services.game import GameService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
 from typing import List
@@ -23,6 +20,7 @@ async def get_games(db: Session = Depends(get_db)):
     """
     Obtiene los juegos que no han comenzado.
     """
+
     service = GameService(db)  # Crea la instancia del servicio con la sesión inyectada
     try:
         return service.get_all_games()
@@ -31,7 +29,7 @@ async def get_games(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/leave_game")
-async def leave_game(data: LeaveStartGame):
+async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
     """
     Si el jugador es el host del juego, se elimina el juego y a los jugadores.
     Si no, se elimina al jugador de la lista de jugadores
@@ -39,7 +37,9 @@ async def leave_game(data: LeaveStartGame):
         player_id (int): ID del jugador.
         game_id (int): ID del juego.
     """
+    service = GameService(db)
     try:
-        GameService.leave_game(data.player_id, data.game_id)
+        service.leave_game(data.player_id, data.game_id)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
+        raise HTTPException(status_code=400, detail="Invalid player or game")
