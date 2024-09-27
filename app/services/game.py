@@ -33,6 +33,9 @@ class GameService:
         else:
             print("acá no debería entrar")
             delete_player(player, game)
+        if len(game.players) == 1:
+            # Avisar el ganador por websocket
+            delete_all_game(self.db, game)
    
     def create_game(self, game_data: CreateGame) -> Dict:
         game = create_game(self.db, game_data.game_name)
