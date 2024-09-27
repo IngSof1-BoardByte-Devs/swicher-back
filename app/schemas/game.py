@@ -14,6 +14,7 @@ class CreateGame(BaseModel):
     name: str
     host: list
 
+
 class LeaveStartGame(BaseModel):
     player_id: int
     game_id: int
@@ -29,3 +30,4 @@ class JoinGame(BaseModel):
 class StartGame(BaseModel):
     player_id: int
     game_id: int
+      
