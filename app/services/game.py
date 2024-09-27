@@ -1,3 +1,4 @@
+from app.database.models import Game, Player
 from app.database.crud import *
 from app.schemas.game import *
 from app.services.movement import MoveService
@@ -16,6 +17,17 @@ class GameService:
         game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games]
         # Inprimir todos os jugadores de todas las partidas
         return game_list
+
+
+    def leave_game(self, player_id: int, game_id: int):
+        player = get_player_by_id(self.db, player_id)
+        game = get_game_by_id(self.db, game_id)
+        if not player or not game or player not in game.players:
+            print("acá debería entrar")
+            raise Exception("Invalid player or game")
+        else:
+            print("acá no debería entrar")
+            delete_player(player, game)
    
     def create_game(self, game_data: CreateGame) -> Dict:
         game = create_game(self.db, game_data.game_name)
