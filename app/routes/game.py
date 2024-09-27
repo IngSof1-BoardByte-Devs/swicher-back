@@ -40,6 +40,7 @@ async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
     service = GameService(db)
     try:
         service.leave_game(data.player_id, data.game_id)
+        return {"status": "OK"}, 200
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail="Invalid player or game")
