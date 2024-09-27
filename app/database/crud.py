@@ -54,8 +54,8 @@ def create_movement(db: Session, game: Game, type: Enum):
     db.commit()
     return new_movement
 
-def create_figure(db: Session, player: Player, type: Enum):
-    new_figure = Figure(type=type, player=player)
+def new_figure(db: Session, type: Enum, game: Game):
+    new_figure = Figure(type=type, game=game)
     db.add(new_figure)
     db.commit()
     return new_figure

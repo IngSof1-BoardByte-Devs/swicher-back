@@ -19,9 +19,8 @@ class GameService:
         self.db = db
 
     def get_all_games(self) -> List[GameOut]:
-        games = fetch_games(self.db)  # Aquí se pasa la sesión a la operación de la base de datos
-        game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games]
-        # Inprimir todos os jugadores de todas las partidas
+        games = fetch_games(self.db)
+        game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games if not g.started]
         return game_list
 
 
@@ -58,24 +57,28 @@ class GameService:
     
 
     def start_game(self, game_data: StartGame) -> Dict:
-
         game = get_game_by_id(self.db, game_data.game_id)
-
         # Manejo de errores
         if not game:
             raise ValueError("Juego no encontrado")
         elif game.host.id != game_data.player_id:
             raise ValueError("Solo el anfitrión puede iniciar el juego")
+        elif len(game.players) < 2:
+            raise ValueError("Se necesitan al menos dos jugadores para iniciar el juego")
+        elif game.started:
+            raise ValueError("El juego ya ha comenzado")
         
         # Actualizar el estado del juego
         put_start_game(self.db, game)
 
         # Asignar los turnos a los jugadores
         players = List[Player]
+        players = game.players
         random.shuffle(players)
         for i in range(len(players)):
             player = players[i]
             put_asign_turn(self.db, player, i+1)
+        
 
         # Crear el mazo de movimientos
         move_service = MoveService(self.db)
