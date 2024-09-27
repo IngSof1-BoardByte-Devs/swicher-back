@@ -5,7 +5,7 @@ __pycache__/
 *.pyo
 *.pyd
 /.vscode
-*.sqlite
+.sqlite
 dist/
 build/
-*.pytest_cache/
+.pytest_cache/
