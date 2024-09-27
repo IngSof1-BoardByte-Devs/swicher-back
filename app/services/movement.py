@@ -1,5 +1,5 @@
 from app.database.crud import *
-from app.schemas.game import *
+from app.schemas.movement import *
 from typing import Dict, List
 from sqlalchemy.orm import Session
 import random
@@ -28,3 +28,11 @@ class MoveService:
             for j in range(3):
                 movement = deck.pop()
                 put_asign_movement(self.db, movement, player)
+
+    def get_movements(self, id: int):
+        player = get_player(self.db,id)
+
+        if not player:
+            raise Exception("No existe jugador")
+
+        return [MovementOut(card_id = m.id, movement_type=m.type) for m in player.movement.all()]
