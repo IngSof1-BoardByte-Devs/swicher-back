@@ -52,3 +52,16 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})    
+    
+@router.post("/start-game")
+async def start_game(game_data: JoinGame, db: Session = Depends(get_db)):
+    """
+    Inicia una partida.
+    """
+    try:
+        service = GameService(db)
+        service.start_game(game_data)
+        return {"status": "OK"}, 200
+    except Exception as e:
+        logging.error(f"Error starting game: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
