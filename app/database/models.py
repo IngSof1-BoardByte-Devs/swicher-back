@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.schema import CheckConstraint
-from app.utils.enums import *
+from app.utils.enums import MovementType, MovementStatus, FigureType, FigureStatus
 
 Base = declarative_base()
 
@@ -14,16 +14,12 @@ class Game(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     started = Column(Boolean, default=False)
-    turn = Column(Integer, default=0)    
-    board = Column(ARRAY(Integer), default=None)
+    turn = Column(Integer, default=0)
+    board = Column(String) # Almacena el tablero en formato JSON
     
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
     host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')
-    
-    __table_args__ = (
-        CheckConstraint('array_length(board, 1) = 36', name='check_board_length'),
-    )
 
 
 class Player(Base):

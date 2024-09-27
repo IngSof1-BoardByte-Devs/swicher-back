@@ -1,13 +1,8 @@
-"""
-Services:
-Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es donde implementas las 
-funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
-"""
-
-from app.database.crud import fetch_games, create_game, create_player, get_game
+from app.database.crud import *
 from app.schemas.game import *
 from typing import Dict, List
 from sqlalchemy.orm import Session
+import random
 
 class GameService:
     def __init__(self, db: Session):
@@ -36,10 +31,22 @@ class GameService:
             raise ValueError("Nombre de jugador requerido")
         
         game = get_game(self.db, game_data.game_id)
-        print("Hasta acá llega bien1")
         
         create_player(self.db, game_data.player_name, game)
-        print("Hasta acá llega bien2")
-        # Simular la lógica de unirse a una partida
-        # En un futuro, aquí se llamaría a la base de datos para actualizar la partida
         return {"status": "OK", "message": "Jugador unido a la partida con éxito"}
+    
+
+    def start_game(self, game_data: StartGame) -> Dict:
+        game = get_game_by_id(self.db, game_data.game_id)
+        if not game:
+            raise ValueError("Juego no encontrado")
+        elif game.host.id != game_data.player_id:
+            raise ValueError("Solo el anfitrión puede iniciar el juego")
+        
+        put_start_game(self.db, game)
+        players = List[Player]
+        random.shuffle(players)
+
+        for i in range(len(players)):
+            player = players[i]
+            put_asign_turn(self.db, player, i+1)
