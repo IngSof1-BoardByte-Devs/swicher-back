@@ -4,6 +4,7 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.schema import CheckConstraint
 from app.utils.enums import MovementType, MovementStatus, FigureType, FigureStatus
+import json
 
 Base = declarative_base()
 
@@ -21,6 +22,15 @@ class Game(Base):
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
     host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')
 
+    # Método para obtener la matriz del tablero
+    @property
+    def board_matrix(self):
+        return json.loads(self.board)
+
+    # Método para establecer la matriz del tablero
+    @board_matrix.setter
+    def board_matrix(self, matrix):
+        self.board = json.dumps(matrix)
 
 class Player(Base):
     __tablename__ = 'players'

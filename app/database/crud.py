@@ -74,3 +74,8 @@ def put_status_movement(db: Session, movement: Movement, status: MovementStatus)
 def put_asign_turn(db: Session, player: Player, turn: int):
     player.turn = turn
     db.commit()
+
+def update_board(db: Session, game: Game, matrix: list):
+    game.board_matrix = matrix
+    db.commit()
+    return game
