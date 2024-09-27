@@ -16,7 +16,7 @@ class FigureService:
         types = list(FigureType.__members__.values())
         for i in range(92):
             figure_type = types[i % len(types)]
-            figure = create_figure(self.db, game, figure_type)
+            figure = new_figure(self.db, figure_type, game)
             deck.append(figure)
         
         # Barajo el mazo
