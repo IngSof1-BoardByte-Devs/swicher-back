@@ -79,3 +79,9 @@ def update_board(db: Session, game: Game, matrix: list):
     game.board_matrix = matrix
     db.commit()
     return game
+
+def get_board(db: Session, game_id: int):
+    game = db.query(Game).filter(Game.id == game_id).first()
+    if game is None:
+        return None
+    return game.board_matrix
