@@ -21,3 +21,7 @@ class GameCreateResponse(BaseModel):
 class JoinGame(BaseModel):
     game_id: int
     player_name: str
+
+class StartGame(BaseModel):
+    player_id: int
+    game_id: int
