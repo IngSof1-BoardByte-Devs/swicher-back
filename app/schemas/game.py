@@ -17,8 +17,3 @@ class CreateGame(BaseModel):
 class LeaveStartGame(BaseModel):
     player_id: int
     game_id: int
-
-class GameTest(BaseModel):
-    id: int
-    name: str
-    players: list
