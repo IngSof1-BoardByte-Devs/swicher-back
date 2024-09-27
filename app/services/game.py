@@ -70,3 +70,9 @@ class GameService:
         # Crear el tablero
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
+    
+    def check_one_player(self, game_id: int) -> bool:
+        game = get_game_by_id(self.db, game_id)
+        if len(game.players) == 1:
+            # Cuando se tenga websockest se enviará un mensaje a todos los jugadores
+            return True
