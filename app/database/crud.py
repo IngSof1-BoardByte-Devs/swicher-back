@@ -34,7 +34,4 @@ def get_game_by_id(db: Session, game_id: int):
 
 def get_player_by_id(db: Session, player_id: int):
     return db.query(Player).filter(Player.id == player_id).first()
-de la sesión.
-Usar with db_session cuando solo una parte de la función necesita acceder a la base de datos o cuando tienes 
-lógica compleja y necesitas más control sobre el manejo de la sesión. 
-"""
+
