@@ -4,6 +4,7 @@ los modelos definidos. Aquí es donde implementas las funciones que interactúan
 sesiones controladas de la base de datos.
 """
 
+from typing import List
 from sqlalchemy.orm import Session
 from app.database.models import *
 from app.utils.enums import *
@@ -79,3 +80,6 @@ def update_board(db: Session, game: Game, matrix: list):
     game.board_matrix = matrix
     db.commit()
     return game
+
+def get_player(db: Session, id: int) -> Player | None:
+    return db.query(Player).get(id)
