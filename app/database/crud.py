@@ -35,7 +35,7 @@ def put_host(db: Session, game: Game, player: Player):
     game.host = player
     db.commit()
 
-def delete_player(player: Player, game: Game):
+def delete_player(db: Session, player: Player, game: Game):
     if not game.started:
         raise Exception("Cannot leave game that has started")
     else:
