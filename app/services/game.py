@@ -93,3 +93,14 @@ class GameService:
         # Crear el tablero
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
+
+    def change_turn(self, player_id: int):
+        game = get_game_by_player_id(self.db,player_id)
+        player = get_player(self.db,player_id)
+        if player.turn == game.turn:
+            update_turn_game(self.db,game)
+
+            if game.turn > len(game.players) or game.turn <= 0: 
+                raise Exception("Error: Turno de jugador que no existe")
+        else:
+            raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
