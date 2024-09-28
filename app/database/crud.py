@@ -104,3 +104,8 @@ def update_board(db: Session, game: Game, matrix: list):
 
 def get_player(db: Session, id: int) -> Player | None:
     return db.query(Player).get(id)
+
+def get_players_in_game(db: Session, player_id: int):
+    player = get_player(db, player_id)
+    game = player.game
+    return game.players
