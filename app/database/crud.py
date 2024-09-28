@@ -29,7 +29,7 @@ def create_player(db: Session, username: str, game: Game) -> Player:
     return new_player
 
 def fetch_games(db: Session):
-    return db.query(Game).all()
+    return db.query(Game)
 
 def put_host(db: Session, game: Game, player: Player):
     game.host = player
