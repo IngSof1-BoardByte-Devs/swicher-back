@@ -23,10 +23,6 @@ async def websocket_handler(websocket: WebSocket):
                 # Desconectar del grupo actual y conectar a la sala 0
                 await manager.disconnect(websocket, game_id)
                 await manager.connect(websocket, 0)
-            else:
-                # Procesar el mensaje normalmente
-                await manager.send_personal_message(f"You wrote: {data}", websocket)
-                await manager.broadcast(f"Client says: {data}", 0)
     except Exception as e:
         print(e)
     finally:
