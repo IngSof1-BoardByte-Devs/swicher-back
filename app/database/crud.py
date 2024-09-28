@@ -112,6 +112,7 @@ def get_players_in_game(db: Session, player_id: int):
 
 def update_turn_game(db : Session, game: Game):
     game.turn = ((game.turn + 1) % len(game.players)) + 1
+    db.commit()
 
 def get_game_by_player_id(db: Session, player_id: int) -> Game:
     return get_player(db,id).game
