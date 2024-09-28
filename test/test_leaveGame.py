@@ -42,7 +42,7 @@ def test_leave_game():
         patch('app.services.game.get_player_by_id', return_value=mock_player1):
         response = client.post("/game/leave_game",  json=leave_game_request.model_dump())
         assert response.status_code == 200
-        assert response.json() == None
+        assert response.json() == [{'status': 'OK'}, 200]
 
 def test_leave_game_not_found():
     leave_game_request = LeaveStartGame(player_id=1, game_id=5)

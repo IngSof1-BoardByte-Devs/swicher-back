@@ -4,6 +4,7 @@ los modelos definidos. Aquí es donde implementas las funciones que interactúan
 sesiones controladas de la base de datos.
 """
 
+from typing import List
 from sqlalchemy.orm import Session
 from app.database.models import *
 from app.utils.enums import *
@@ -28,19 +29,29 @@ def create_player(db: Session, username: str, game: Game) -> Player:
     return new_player
 
 def fetch_games(db: Session):
-    return db.query(Game).all()
+    return db.query(Game)
 
 def put_host(db: Session, game: Game, player: Player):
     game.host = player
     db.commit()
 
-def delete_player(player: Player, game: Game):
+def delete_player(db: Session, player: Player, game: Game):
     if not game.started:
         raise Exception("Cannot leave game that has started")
     else:
         game.players.remove(player)
         player.delete()
         db.commit()
+
+def delete_all_game(db: Session, game: Game):
+    for movement in game.movements:
+        movement.delete()
+    for figure in game.figures:
+        figure.delete()
+    for player in game.players:
+        player.delete()
+    game.delete()
+    db.commit()
 
 def get_player_by_id(db: Session, player_id: int):
     return db.query(Player).filter(Player.id == player_id).first()
@@ -90,3 +101,11 @@ def update_board(db: Session, game: Game, matrix: list):
     game.board_matrix = matrix
     db.commit()
     return game
+
+def get_player(db: Session, id: int) -> Player | None:
+    return db.query(Player).get(id)
+
+def get_players_in_game(db: Session, player_id: int):
+    player = get_player(db, player_id)
+    game = player.game
+    return game.players

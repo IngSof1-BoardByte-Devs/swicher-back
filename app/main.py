@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import game
+from app.routes import game, player
 from app.core.websocket import websocket_handler
 from fastapi.websockets import WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +22,7 @@ model.Base.metadata.create_all(bind=engine)
 
 # Incluyendo las rutas
 app.include_router(game.router, prefix="/game")
+app.include_router(player.router, prefix="/player")
 
 # WebSocket endpoint
 @app.websocket("/ws")
