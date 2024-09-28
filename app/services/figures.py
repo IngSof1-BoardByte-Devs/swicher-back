@@ -39,6 +39,10 @@ class FigureService:
 
     def get_figures(self, id: int):
         player = get_player(self.db, id)
+        if player is None:
+            raise Exception("No existe jugador")
+        if player.game.started != True:
+            raise Exception("El juego no ha comenzado")
         print("Jugador:", player)  
         print("Figuras del jugador:", [f.id for f in player.figures])  
         if not player:
