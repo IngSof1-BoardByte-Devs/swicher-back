@@ -22,11 +22,14 @@ class BoardService:
         # Guardar la matriz en la base de datos
         update_board(self.db, game, matrix)
 
-    def get_board(self, game_id: int) -> BoardState:
-        game = get_game(self.db, game_id)
+    def get_board_values(self, player_id: int) -> List[Color]:
+        game = get_game_by_player_id(self.db, player_id)
         matrix = game.board_matrix
-        board = []
-        for y, row in enumerate(matrix):
-            for x, figure_id in enumerate(row):
-                board.append(Figure(figure_id=figure_id, position=Position(x=x, y=y)))
-        return BoardState(board_state=board)
+        board_values = []
+        color = Color
+        # Guardar todo como una lista de enteros
+        for i in range(6):
+            for j in range(6):
+                board_values.append(Color(color = matrix[i][j]))
+
+        return board_values

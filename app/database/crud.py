@@ -115,5 +115,5 @@ def update_turn_game(db : Session, game: Game):
     db.commit()
 
 def get_game_by_player_id(db: Session, player_id: int) -> Game:
-    return get_player(db,id).game
-    
+    player = get_player(db, player_id)
+    return player.game
