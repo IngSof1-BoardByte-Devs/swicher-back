@@ -6,7 +6,9 @@ petición en un endpoint específico.
 
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
+from app.schemas.player import PlayerRequest
 from app.services.game import GameService
+from app.services.figures import FigureService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
 from typing import List
@@ -80,4 +82,17 @@ async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
         return {"status": "OK"}, 200
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+
+
+@router.get("/figure-cards")
+async def get_figure_cards(data: PlayerRequest, db: Session = Depends(get_db)):
+    """
+    Obtiene las cartas de una figura.
+    """
+    service = FigureService(db)
+    try:
+        return service.get_figure_cards(data.player_id)
+    except Exception as e:
+        logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
