@@ -5,7 +5,7 @@ petición en un endpoint específico.
 """
 
 from fastapi import APIRouter, Depends, Response
-from app.schemas.game import CreateGame, GameCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
+from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
 from app.services.game import GameService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
@@ -39,35 +39,32 @@ async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        service.leave_game(data.player_id, data.game_id)
-        return {"status": "OK"}, 200
+        return service.leave_game(data.player_id, data.game_id)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail="Invalid player or game")
         
-@router.post("/create-game", response_model=None)
+@router.post("/create-game", response_model=GameLeaveCreateResponse)
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     Crea una nueva partida.
     """
     try:
         service = GameService(db)
-        service.create_game(game_data)
-        return {"message": "Partida creada con éxito"}, 200
+        return service.create_game(game_data)
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
     
 
-@router.post("/join-game")
+@router.post("/join-game", response_model=GameLeaveCreateResponse)
 async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     Permite a un jugador unirse a una partida.
     """
     try:
         service = GameService(db)
-        service.join_game(game_data)
-        return {"status": "OK"}, 201
+        return service.join_game(game_data)
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})    

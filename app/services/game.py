@@ -37,14 +37,14 @@ class GameService:
             # Avisar el ganador por websocket
             delete_all_game(self.db, game)
    
-    def create_game(self, game_data: CreateGame) -> Dict:
+    def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
         game = create_game(self.db, game_data.game_name)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        return {"status": "OK", "game_id": game.id}
+        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
-    def join_game(self, data: JoinGame):
+    def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
         game = get_game(self.db, data.game_id)
         
         if game == None:
@@ -53,7 +53,9 @@ class GameService:
             raise Exception("Error: The game has already begun")
         if len(game.players) >= 4:
             raise Exception("Error: Maximum players allowed")
-        create_player(self.db, data.player_name, game)
+        player = create_player(self.db, data.player_name, game)
+
+        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
 
     def start_game(self, game_data: StartGame) -> Dict:
