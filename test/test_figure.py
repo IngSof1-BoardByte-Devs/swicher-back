@@ -3,11 +3,13 @@ from unittest.mock import MagicMock, Mock
 
 from app.schemas.figure import FigureOut
 from app.services.figures import FigureService
+from app.utils.enums import FigureStatus
 
 class TestGetFigures:
 
+
     @pytest.mark.parametrize("player_id, expected_exception, expected_figures", [
-        (123, None, [FigureOut(card_id=1, figure_type="tipo1"), FigureOut(card_id=2, figure_type="tipo3")]),  
+        (123, None, [FigureOut(card_id=1, figure_type="tipo1")]),  
         (456, Exception("No existe jugador"), None),  
         (789, None, []),  
     ])
@@ -18,15 +20,14 @@ class TestGetFigures:
         # Mockea el objeto `player` con figuras (o sin figuras)
         mock_player = Mock()
         if player_id == 123:
-            mock_player.figures.all.return_value = [
-                Mock(id=1, type="tipo1", status="INHAND"),
-                Mock(id=2, type="tipo3", status="INDECK"),
+            mock_player.figures = [
+                Mock(name='figure_1', id=1, type="tipo1", status=FigureStatus.INHAND),
+                Mock(name='figure_2', id=2, type="tipo3", status=FigureStatus.INDECK),
             ]
         elif player_id == 456:
             mock_player = None
         elif player_id == 789:
-            mock_player.figures.all.return_value = []
-            
+            mock_player.figures = []
 
         # Define el valor de retorno esperado
         mock_get_player.return_value = mock_player
