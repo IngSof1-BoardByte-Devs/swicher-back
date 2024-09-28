@@ -28,8 +28,8 @@ class BoardService:
         board_values = []
         color = Color
         # Guardar todo como una lista de enteros
-        for row in matrix:
-            for value in row:
-                color.color = value
-                board_values.append(color)
+        for i in range(6):
+            for j in range(6):
+                board_values.append(Color(color = matrix[i][j]))
+
         return board_values
