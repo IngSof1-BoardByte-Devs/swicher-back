@@ -4,6 +4,8 @@ Es donde se definen los endpoints y se especifica qué funciones se ejecutarán 
 petición en un endpoint específico.
 """
 
+from app.schemas.board import BoardOut
+from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
 from app.schemas.player import PlayerRequest
@@ -15,6 +17,10 @@ from typing import List
 from fastapi import HTTPException
 import logging
 
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
+
+
 router = APIRouter()
 
 @router.get("/get_games", response_model=List[GameOut])
@@ -23,7 +29,7 @@ async def get_games(db: Session = Depends(get_db)):
     Obtiene los juegos que no han comenzado.
     """
 
-    service = GameService(db)  # Crea la instancia del servicio con la sesión inyectada
+    service = GameService(db)
     try:
         return service.get_all_games()
     except Exception as e:
@@ -84,7 +90,6 @@ async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-
 @router.get("/figure-cards/{player_id}", response_model=List[FigureOut])
 async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
     """
@@ -96,3 +101,19 @@ async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+
+@router.get("/board", response_model=BoardOut)
+async def board(player_id : int, db: Session = Depends(get_db)):
+    """
+    Obtiene el tablero
+    """
+
+    service = BoardService(db)
+    try:
+        colors = service.get_board_values(player_id)
+        result = BoardOut
+        result.board = colors
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching games: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
