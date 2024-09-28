@@ -4,14 +4,20 @@ Es donde se definen los endpoints y se especifica qué funciones se ejecutarán 
 petición en un endpoint específico.
 """
 
-from fastapi import APIRouter, Depends, Response
-from app.schemas.game import CreateGame, GameCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
+from fastapi import APIRouter, Depends
+from app.schemas.game import CreateGame, GameOut, JoinGame, StartGame, LeaveStartGame
+from app.schemas.board import BoardOut
+from app.services.board import BoardService
 from app.services.game import GameService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi import HTTPException
 import logging
+
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
+
 
 router = APIRouter()
 
@@ -84,3 +90,26 @@ async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+
+"""GET /board
+Devuelve el estado del tablero de la partida.
+Request Body: {"player_id": "int"}
+Response:
+200 OK: { "board": [color: “int”, …]}
+400 ERROR: {"status": "ERROR", "message": "string"}"""
+
+@router.get("/board", response_model=BoardOut)
+async def board(player_id : int, db: Session = Depends(get_db)):
+    """
+    Obtiene el tablero
+    """
+
+    service = BoardService(db)  # Crea la instancia del servicio con la sesión inyectada
+    try:
+        colors = service.get_board_values(player_id)
+        result = BoardOut
+        result.board = colors
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching games: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
