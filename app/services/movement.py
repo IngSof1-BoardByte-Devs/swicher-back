@@ -30,9 +30,13 @@ class MoveService:
                 put_asign_movement(self.db, movement, player)
 
     def get_movements(self, id: int):
-        player = get_player(self.db,id)
+            player = get_player(self.db,id)
+            game = get_game_by_player_id(self.db,id)
 
-        if not player:
-            raise Exception("No existe jugador")
+            if not player:
+                raise Exception("No existe jugador")
 
-        return [MovementOut(card_id = m.id, movement_type=m.type) for m in player.movement.all()]
+            if not game.started:
+                raise Exception("La partida no está empezada")
+
+            return [MovementOut(card_id = m.id, movement_type=m.type) for m in player.movements]
