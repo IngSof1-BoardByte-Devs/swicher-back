@@ -85,14 +85,14 @@ async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
 
-@router.get("/figure-cards")
-async def get_figure_cards(data: PlayerRequest, db: Session = Depends(get_db)):
+@router.get("/figure-cards/{player_id}", response_model=List[FigureOut])
+async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de una figura.
     """
     service = FigureService(db)
     try:
-        return service.get_figure_cards(data.player_id)
+        return service.get_figures(player_id)
     except Exception as e:
         logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
