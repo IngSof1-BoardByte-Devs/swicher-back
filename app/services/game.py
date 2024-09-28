@@ -95,14 +95,25 @@ class GameService:
         board_service.create_board(game.id)
 
     def change_turn(self, player_id: int):
-        player = get_player(self.db,player_id)
-        if player == None:
-            raise Exception("Error: No existe jugador")
-        game = get_game_by_player_id(self.db,player_id)
-        print("Turno de la partida: ", game.turn, "\n")
-        print("Turno del jugador: ", player.turn, "\n")
+        # Obtener el juego asociado al jugador
+        game = get_game_by_player_id(self.db, player_id)
+        if not game:
+            raise Exception("Error: No existe jugador o no existe la partida")
+        
+        # Verificar si el juego ha comenzado
+        if not game.started:
+            raise Exception("Error: La partida todavía no se inicializó")
+        
+        # Obtener el jugador
+        player = get_player(self.db, player_id)
+        
+        # Verificar si es el turno del jugador
         if player.turn == game.turn:
-            update_turn_game(self.db,game)
+            # Actualizar el turno del juego
+            update_turn_game(self.db, game)
+            
+            # Verificar si el turno es válido
+            if game.turn > len(game.players) or game.turn <= 0:
+                raise Exception("Error: Turno de jugador que no existe")
         else:
             raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
-        print("Turno: ", game.turn, "\n")
