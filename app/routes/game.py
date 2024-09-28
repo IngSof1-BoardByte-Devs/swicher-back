@@ -5,6 +5,7 @@ petición en un endpoint específico.
 """
 
 from app.schemas.board import BoardOut
+from app.schemas.movement import MovementOut, MovementRequest
 from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
@@ -17,6 +18,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from fastapi import HTTPException
 import logging
+
+from app.services.movement import MoveService
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
@@ -118,3 +121,16 @@ async def board(player_id : int, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error fetching games: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/movement-cards", response_model=List[MovementOut])
+async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene las cartas de movimiento de un jugador.
+    """
+    service = MoveService(db)
+    try:
+        movements = service.get_movements(player_id)
+        return movements
+    except Exception as e:
+        logging.error(f"Error fetching movements: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
