@@ -7,7 +7,7 @@ from app.services.figures import FigureService
 class TestGetFigures:
 
     @pytest.mark.parametrize("player_id, expected_exception, expected_figures", [
-        (123, None, [FigureOut(card_id=1, figure_type="tipo1", status="INHAND"), FigureOut(card_id=2, figure_type="tipo3", status="INDECK")]),  
+        (123, None, [FigureOut(card_id=1, figure_type="tipo1"), FigureOut(card_id=2, figure_type="tipo3")]),  
         (456, Exception("No existe jugador"), None),  
         (789, None, []),  
     ])
