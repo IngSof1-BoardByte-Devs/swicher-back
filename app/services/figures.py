@@ -36,11 +36,11 @@ class FigureService:
             for j in range(3):  # Cantidad de figuras sobre la mesa (no me acuerdo cuantas son)
                 figure = player.figures[j]
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
-   
+
     def get_figures(self, id: int):
         player = get_player(self.db, id)
-
+        print("Jugador:", player)  
+        print("Figuras del jugador:", [f.id for f in player.figures])  
         if not player:
             raise Exception("No existe jugador")
-
-        return [FigureOut(card_id=m.id, figure_type=m.type) for m in player.figures.all()]
+        return [FigureOut(card_id=m.id, figure_type=m.type) for m in player.figures if hasattr(m, 'status') and m.status == FigureStatus.INHAND]
