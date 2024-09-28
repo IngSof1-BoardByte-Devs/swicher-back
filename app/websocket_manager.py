@@ -10,13 +10,8 @@ class ConnectionManager:
         """
         Añade a un usuario al grupo indicado. Si ya está en otro grupo, lo desconecta de ese grupo.
         """
+        # Aceptar la conexión
         await websocket.accept()
-
-        # Desconectar de cualquier otro grupo
-        for group_id, connections in self.groups.items():
-            if websocket in connections:
-                connections.remove(websocket)
-                break
 
         # Añadir al grupo actual
         if group not in self.groups:
