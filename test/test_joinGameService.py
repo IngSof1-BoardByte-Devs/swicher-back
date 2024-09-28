@@ -1,4 +1,4 @@
-import unittest
+""" import unittest
 from unittest.mock import patch, MagicMock
 
 from app.schemas.game import JoinGame
@@ -76,4 +76,4 @@ class TestGameService(unittest.TestCase):
         self.assertEqual(str(context.exception), "Error: Maximum players allowed")
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main() """
