@@ -18,9 +18,6 @@ from typing import List
 from fastapi import HTTPException
 import logging
 
-logger = logging.getLogger('uvicorn.error')
-logger.setLevel(logging.DEBUG)
-
 
 router = APIRouter()
 
@@ -116,5 +113,27 @@ async def board(player_id : int, db: Session = Depends(get_db)):
         result.board = colors
         return result
     except Exception as e:
-        logging.error(f"Error fetching games: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logging.error(f"Error getting board: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+    
+"""
+POST /end-turn
+Finaliza el turno de un jugador.
+Request Body: {"player_id": "int"}
+Response:
+200 OK: {"status": "OK"}
+400 ERROR: {"status": "ERROR", "message": "string"}"""
+
+@router.post("/end-turn")
+async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
+    """
+    Termina el turno del jugador.
+    """
+    service = GameService(db)
+    try:
+        service.change_turn(player.player_id)
+        return {"status": "OK"}
+    
+    except Exception as e:
+        logging.error(f"Error starting game: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
