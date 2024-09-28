@@ -14,3 +14,6 @@ class Figure(BaseModel):
 
 class BoardState(BaseModel):
     board_state: List[Figure]
+
+class BoardOut(BaseModel):
+    board: List[Color]

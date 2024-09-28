@@ -109,3 +109,7 @@ def get_players_in_game(db: Session, player_id: int):
     player = get_player(db, player_id)
     game = player.game
     return game.players
+
+def get_game_by_player_id(db: Session, player_id: int) -> Game:
+    player = get_player(db, player_id)
+    return player.game
