@@ -9,6 +9,7 @@ from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
 from app.schemas.player import PlayerRequest
+from app.schemas.figure import FigureOut
 from app.services.game import GameService
 from app.services.figures import FigureService
 from app.database.session import get_db  # Importa la función para obtener la sesión
