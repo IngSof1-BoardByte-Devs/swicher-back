@@ -1,4 +1,5 @@
 from app.database.crud import *
+from app.schemas.figure import FigureOut
 from app.schemas.game import *
 from typing import Dict, List
 from sqlalchemy.orm import Session
@@ -35,3 +36,11 @@ class FigureService:
             for j in range(3):  # Cantidad de figuras sobre la mesa (no me acuerdo cuantas son)
                 figure = player.figures[j]
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
+   
+    def get_figures(self, id: int):
+        player = get_player(self.db, id)
+
+        if not player:
+            raise Exception("No existe jugador")
+
+        return [FigureOut(card_id=m.id, figure_type=m.type) for m in player.figures.all()]
