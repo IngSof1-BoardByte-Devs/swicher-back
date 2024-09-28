@@ -94,6 +94,11 @@ class GameService:
 
     def change_turn(self, player_id: int):
         game = get_game_by_player_id(self.db,player_id)
-        turn = update_turn_game(self.db,game)
-        if turn > len(game.players) or turn <= 0: 
-            raise Exception("Error: Turno de jugador que no existe")
+        player = get_player(self.db,player_id)
+        if player.turn == game.turn:
+            update_turn_game(self.db,game)
+
+            if game.turn > len(game.players) or game.turn <= 0: 
+                raise Exception("Error: Turno de jugador que no existe")
+        else:
+            raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
