@@ -1,12 +1,15 @@
 from pydantic import BaseModel
 from typing import List
 
+class Color(BaseModel):
+    color: int
+
 class Position(BaseModel):
     x: int
     y: int
 
 class Figure(BaseModel):
-    figure_id: int
+    color: Color
     position: Position
 
 class BoardState(BaseModel):
