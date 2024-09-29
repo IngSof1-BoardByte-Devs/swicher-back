@@ -76,15 +76,14 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
         logging.error(f"Error creating game: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")   
     
-@router.post("/start-game")
-async def start_game(game_data: StartGame, db: Session = Depends(get_db)):
+@router.post("/{player_id}")
+async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     Inicia una partida.
     """
+    service = GameService(db)
     try:
-        service = GameService(db)
-        service.start_game(game_data)
-        return {"status": "OK"}, 200
+        return service.start_game(player_id)
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})

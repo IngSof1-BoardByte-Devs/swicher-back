@@ -74,12 +74,15 @@ class GameService:
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
 
-    def start_game(self, game_data: StartGame) -> Dict:
-        game = get_game_by_id(self.db, game_data.game_id)
+    def start_game(self, player_id: int) -> Dict:
+        player = get_player(self.db, player_id)
+        game = get_game_by_player_id(self.db, player_id)
+
         # Manejo de errores
         if not game:
             raise ValueError("Juego no encontrado")
-        elif game.host.id != game_data.player_id:
+        elif int(game.host.id) != int(player_id):
+            print(game.host.id, player_id, game.host.id == player_id)
             raise ValueError("Solo el anfitrión puede iniciar el juego")
         elif len(game.players) < 2:
             raise ValueError("Se necesitan al menos dos jugadores para iniciar el juego")
@@ -109,6 +112,8 @@ class GameService:
         # Crear el tablero
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
+
+        return {"status": "OK", "message": "Game started"}
 
     def change_turn(self, player_id: int):
         # Obtener el juego asociado al jugador
