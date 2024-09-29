@@ -22,7 +22,7 @@ model.Base.metadata.create_all(bind=engine)
 
 # Incluyendo las rutas
 app.include_router(game.router, prefix="/game")
-app.include_router(player.router, prefix="/player")
+app.include_router(player.router, prefix="/players")
 
 # WebSocket endpoint
 @app.websocket("/ws")

@@ -36,7 +36,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error fetching players: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.get("/get_games", response_model=List[GameOut])
+@router.get("/", response_model=List[GameOut])
 async def get_games(db: Session = Depends(get_db)):
     """
     Obtiene los juegos que no han comenzado.
@@ -64,7 +64,7 @@ async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
         logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 
         
-@router.post("/create-game", response_model=GameLeaveCreateResponse)
+@router.post("/", response_model=GameLeaveCreateResponse)
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     Crea una nueva partida.
