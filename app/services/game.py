@@ -11,6 +11,7 @@ from app.schemas.player import *
 from app.services.movement import MoveService
 from app.services.figures import FigureService
 from app.services.board import BoardService
+from app.websocket_manager import ConnectionManager
 from typing import Dict, List
 from sqlalchemy.orm import Session
 import random
@@ -18,6 +19,7 @@ import random
 class GameService:
     def __init__(self, db: Session):
         self.db = db
+        self.ws = ConnectionManager()
 
     def get_all_games(self) -> List[GameOut]:
         games = fetch_games(self.db)
@@ -58,6 +60,9 @@ class GameService:
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
+        json_ws = {"game_id": game.id, "game_name": game.name, "num_players": len(game.players)}
+        json_ws = json.dumps(json_ws)
+        self.ws.broadcast(json_ws, 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
     def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
