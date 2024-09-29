@@ -29,12 +29,8 @@ class GameService:
         game = get_game(self.db, game_id)
         if game == None:
             raise Exception("Error: Game not found")
-        if game.started:
-            status = "Started"
-        else:
-            status = "Not started"
-        players = [PlayerOut(username=player.username, id=player.id) for player in game.players]
-        return SingleGameOut(id=game.id, name=game.name,status=status , players= players)
+        players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
+        return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
 
     def leave_game(self, player_id: int, game_id: int):
         player = get_player(self.db, player_id)

@@ -16,7 +16,8 @@ class Game(Base):
     name = Column(String)
     started = Column(Boolean, default=False)
     turn = Column(Integer, default=0)
-    board = Column(String) # Almacena el tablero en formato JSON
+    bloqued_color = Column(Integer, default=None)
+    board = Column(String)
     
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')

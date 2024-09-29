@@ -15,7 +15,9 @@ class GameOut(BaseModel):
 class SingleGameOut(BaseModel):
     id: int
     name: str
-    status: str
+    started: bool
+    turn: int
+    bloqued_color: int | None
     players: List[PlayerOut]
 
 class CreateGame(BaseModel):
