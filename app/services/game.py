@@ -36,14 +36,15 @@ class GameService:
         return SingleGameOut(id=game.id, name=game.name,status=status , players= players)
 
     def leave_game(self, player_id: int, game_id: int):
-        player = get_player_by_id(self.db, player_id)
-        game = get_game_by_id(self.db, game_id)
-        if not player or not game or player not in game.players:
-            print("acá debería entrar")
-            raise Exception("Invalid player or game")
-        else:
-            print("acá no debería entrar")
-            delete_player(player, game)
+        player = get_player(self.db, player_id)
+        if not player:
+            raise Exception("No existe el jugador")
+        game = get_game(self.db, game_id)
+        if not game:
+            raise Exception("No existe la partida")
+        if player not in game.players:
+            raise Exception("El jugador no esta en esa partida")
+        delete_player(self.db,player, game)
         if len(game.players) == 1:
             # Avisar el ganador por websocket
             delete_all_game(self.db, game)

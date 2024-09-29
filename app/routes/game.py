@@ -49,8 +49,7 @@ async def get_games(db: Session = Depends(get_db)):
 @router.post("/leave_game")
 async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
     """
-    Si el jugador es el host del juego, se elimina el juego y a los jugadores.
-    Si no, se elimina al jugador de la lista de jugadores
+    Ningun jugador puede abandonar una partida no empezada
     Args:
         player_id (int): ID del jugador.
         game_id (int): ID del juego.
@@ -60,7 +59,7 @@ async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
         return service.leave_game(data.player_id, data.game_id)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
-        raise HTTPException(status_code=400, detail="Invalid player or game")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 
         
 @router.post("/create-game", response_model=GameLeaveCreateResponse)
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
@@ -125,16 +124,8 @@ async def board(player_id : int, db: Session = Depends(get_db)):
         result.board = colors
         return result
     except Exception as e:
-        logging.error(f"Error getting board: {str(e)}")
+        logging.error(f"Error get board: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
-    
-"""
-POST /end-turn
-Finaliza el turno de un jugador.
-Request Body: {"player_id": "int"}
-Response:
-200 OK: {"status": "OK"}
-400 ERROR: {"status": "ERROR", "message": "string"}"""
 
 @router.post("/end-turn")
 async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
