@@ -52,7 +52,7 @@ async def get_games(db: Session = Depends(get_db)):
 @router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
-    Crea una nueva partida.
+    Crea una nueva partida.9. Abandonar Partida (NO CANCELAR)
     """
     try:
         service = GameService(db)
@@ -95,20 +95,6 @@ async def board(player_id : int, db: Session = Depends(get_db)):
         return service.get_board_values(player_id)
     except Exception as e:
         logging.error(f"Error get board: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
-
-@router.post("/end-turn", tags=["In Game"])
-async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
-    """
-    Termina el turno del jugador.
-    """
-    service = GameService(db)
-    try:
-        service.change_turn(player.player_id)
-        return {"status": "OK"}
-    
-    except Exception as e:
-        logging.error(f"Error end tunr: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
 @router.get("/{player_id}/move-cards", response_model=List[MovementOut], tags=["In Game"])

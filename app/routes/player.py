@@ -36,4 +36,18 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
         return service.leave_game(id_player)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+
+@router.put("/{id_player}/turn", tags=["In Game"])
+async def end_turn(id_player: int, db: Session = Depends(get_db)):
+    """
+    Termina el turno del jugador.
+    """
+    service = GameService(db)
+    try:
+        service.change_turn(id_player)
+        return {"status": "OK", "message": "Turn ended"}
+    
+    except Exception as e:
+        logging.error(f"Error end tunr: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})

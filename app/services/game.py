@@ -115,11 +115,11 @@ class GameService:
         # Obtener el juego asociado al jugador
         game = get_game_by_player_id(self.db, player_id)
         if not game:
-            raise Exception("Error: No existe jugador o no existe la partida")
+            raise Exception("Error: Game not found")
         
         # Verificar si el juego ha comenzado
         if not game.started:
-            raise Exception("Error: La partida todavía no se inicializó")
+            raise Exception("Error: The game has not started")
         
         # Obtener el jugador
         player = get_player(self.db, player_id)
@@ -131,6 +131,6 @@ class GameService:
             
             # Verificar si el turno es válido
             if game.turn > len(game.players) or game.turn <= 0:
-                raise Exception("Error: Turno de jugador que no existe")
+                raise Exception("Error: Invalid turn")
         else:
-            raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
+            raise Exception("Error: The player is not in turn")
