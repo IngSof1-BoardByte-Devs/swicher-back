@@ -111,7 +111,7 @@ async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/board", response_model=BoardOut)
+@router.get("/board/{player_id}", response_model=BoardOut)
 async def board(player_id : int, db: Session = Depends(get_db)):
     """
     Obtiene el tablero
