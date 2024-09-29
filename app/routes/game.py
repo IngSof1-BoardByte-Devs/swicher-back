@@ -54,8 +54,8 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     Crea una nueva partida.9. Abandonar Partida (NO CANCELAR)
     """
+    service = GameService(db)
     try:
-        service = GameService(db)
         return service.create_game(game_data)
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
@@ -86,13 +86,13 @@ async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
 @router.get("/{id_game}/board", response_model=BoardOut, tags=["In Game"])
-async def board(player_id : int, db: Session = Depends(get_db)):
+async def board(id_game : int, db: Session = Depends(get_db)):
     """
     Obtiene el tablero
     """
     service = BoardService(db)
     try:
-        return service.get_board_values(player_id)
+        return service.get_board_values(id_game)
     except Exception as e:
         logging.error(f"Error get board: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})

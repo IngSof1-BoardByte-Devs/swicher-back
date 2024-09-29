@@ -22,8 +22,8 @@ class BoardService:
         # Guardar la matriz en la base de datos
         update_board(self.db, game, matrix)
 
-    def get_board_values(self, player_id: int) -> List[Color]:
-        game = get_game_by_player_id(self.db, player_id)
+    def get_board_values(self, id_game: int) -> List[Color]:
+        game = get_game(self.db, id_game)
         matrix = game.board_matrix
         board_values = []
         color = Color
