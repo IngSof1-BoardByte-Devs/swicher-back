@@ -8,7 +8,7 @@ from app.schemas.board import BoardOut
 from app.schemas.movement import MovementOut, MovementRequest
 from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
-from app.schemas.game import CreateGame, GameLeaveCreateResponse, GameOut, JoinGame, StartGame, LeaveStartGame
+from app.schemas.game import *
 from app.schemas.player import PlayerRequest
 from app.schemas.figure import FigureOut
 from app.services.game import GameService
@@ -20,6 +20,18 @@ from fastapi import HTTPException
 import logging
 
 router = APIRouter()
+
+@router.get("/get_game/{game_id}", response_model=SingleGameOut)
+async def get_game(game_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene los jugadores en el juego.
+    """
+    service = GameService(db)
+    try:
+        return service.get_game(game_id)
+    except Exception as e:
+        logging.error(f"Error fetching players: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/get_games", response_model=List[GameOut])
 async def get_games(db: Session = Depends(get_db)):
