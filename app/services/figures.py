@@ -43,8 +43,13 @@ class FigureService:
             raise Exception("No existe jugador")
         if player.game.started != True:
             raise Exception("El juego no ha comenzado")
-        print("Jugador:", player)  
-        print("Figuras del jugador:", [f.id for f in player.figures])  
         if not player:
             raise Exception("No existe jugador")
-        return [FigureOut(card_id=m.id, figure_type=m.type) for m in player.figures if hasattr(m, 'status') and m.status == FigureStatus.INHAND]
+        
+        figures = []
+        for p in player.game.players:
+            for m in p.figures:
+                if m.status == FigureStatus.INHAND:
+                    figures.append(FigureOut(player_id=p.id, card_id=m.id, figure_type=m.type))
+
+        return figures
