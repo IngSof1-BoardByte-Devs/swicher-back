@@ -19,6 +19,8 @@ from typing import List
 from fastapi import HTTPException
 import logging
 
+from app.services.movement import MoveService
+
 router = APIRouter()
 
 @router.get("/get_game/{game_id}", response_model=SingleGameOut)
