@@ -13,6 +13,7 @@ from app.services.figures import FigureService
 from app.services.board import BoardService
 from typing import Dict, List
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 import random
 
 class GameService:
@@ -76,18 +77,18 @@ class GameService:
 
     def start_game(self, player_id: int) -> Dict:
         player = get_player(self.db, player_id)
+        if not player:
+            raise HTTPException(status_code=404, detail="Player not found")
         game = get_game_by_player_id(self.db, player_id)
 
         # Manejo de errores
-        if not game:
-            raise ValueError("Juego no encontrado")
+        if game.started:
+            raise HTTPException(status_code=400, detail="The game has already started")
         elif int(game.host.id) != int(player_id):
             print(game.host.id, player_id, game.host.id == player_id)
-            raise ValueError("Solo el anfitrión puede iniciar el juego")
+            raise HTTPException(status_code=403, detail="Only the game owner can start the game")
         elif len(game.players) < 2:
-            raise ValueError("Se necesitan al menos dos jugadores para iniciar el juego")
-        elif game.started:
-            raise ValueError("El juego ya ha comenzado")
+            raise HTTPException(status_code=400, detail="The game must have at least 2 players")
         
         # Actualizar el estado del juego
         put_start_game(self.db, game)
