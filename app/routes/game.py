@@ -24,7 +24,7 @@ import logging
 
 router = APIRouter()
 
-@router.get("/get_game/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
+@router.get("/get-game/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
 async def get_game(game_id: int, db: Session = Depends(get_db)):
     """
     Obtiene los jugadores en el juego.
