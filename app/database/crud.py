@@ -40,17 +40,17 @@ def delete_player(db: Session, player: Player, game: Game):
         raise Exception("Cannot leave game that has started")
     else:
         game.players.remove(player)
-        player.delete()
+        db.delete(player)
         db.commit()
 
 def delete_all_game(db: Session, game: Game):
     for movement in game.movements:
-        movement.delete()
+        db.delete(movement)
     for figure in game.figures:
-        figure.delete()
+        db.delete(figure)
     for player in game.players:
-        player.delete()
-    game.delete()
+        db.delete(player)
+    db.delete(game)
     db.commit()
 
 def get_player_by_id(db: Session, player_id: int):
