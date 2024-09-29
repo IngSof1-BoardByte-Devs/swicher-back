@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 class MovementOut(BaseModel):
-    card_id : int
-    movement_type : str
+    id_movement : int
+    type_movement : str
 
 class MovementRequest(BaseModel):
     player_id: int

@@ -130,7 +130,7 @@ async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
         logging.error(f"Error end tunr: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/movement-cards", response_model=List[MovementOut], tags=["In Game"])
+@router.get("/{player_id}/move-cards", response_model=List[MovementOut], tags=["In Game"])
 async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de movimiento de un jugador.
