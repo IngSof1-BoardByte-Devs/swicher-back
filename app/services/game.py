@@ -13,6 +13,7 @@ from app.services.figures import FigureService
 from app.services.board import BoardService
 from typing import Dict, List
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 import random
 
 class GameService:
@@ -28,30 +29,25 @@ class GameService:
         game = get_game(self.db, game_id)
         if game == None:
             raise Exception("Error: Game not found")
-        if game.started:
-            status = "Started"
-        else:
-            status = "Not started"
-        players = [PlayerOut(username=player.username, id=player.id) for player in game.players]
-        return SingleGameOut(id=game.id, name=game.name,status=status , players= players)
+        players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
+        return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
 
-    def leave_game(self, player_id: int, game_id: int):
+    def leave_game(self, player_id: int):
         player = get_player(self.db, player_id)
         if not player:
-            raise Exception("No existe el jugador")
+            raise HTTPException(status_code=404, detail="Player not found")
         
-        game = get_game(self.db, game_id)
-        if not game:
-            raise Exception("No existe la partida")
+        game = get_game_by_player_id(self.db, player_id)
         
         if player not in game.players:
-            raise Exception("El jugador no esta en esa partida")
+            raise HTTPException(status_code=404, detail="Player not in game")
         if len(game.players) == 1:
-            raise Exception("No puede abandonar partida el jugador cuando es uno solo")
+            raise HTTPException(status_code=404, detail="Can't leave game with only one player")
         
         delete_player(self.db,player, game)
         # Avisar el ganador por websocket
         # delete_all_game(self.db, game)
+        return {"status": "OK", "message": "Player left the game"}
    
     def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
         game = create_game(self.db, game_data.game_name)
@@ -74,17 +70,20 @@ class GameService:
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
 
-    def start_game(self, game_data: StartGame) -> Dict:
-        game = get_game_by_id(self.db, game_data.game_id)
+    def start_game(self, player_id: int) -> Dict:
+        player = get_player(self.db, player_id)
+        if not player:
+            raise HTTPException(status_code=404, detail="Player not found")
+        game = get_game_by_player_id(self.db, player_id)
+
         # Manejo de errores
-        if not game:
-            raise ValueError("Juego no encontrado")
-        elif game.host.id != game_data.player_id:
-            raise ValueError("Solo el anfitrión puede iniciar el juego")
+        if game.started:
+            raise HTTPException(status_code=400, detail="The game has already started")
+        elif int(game.host.id) != int(player_id):
+            print(game.host.id, player_id, game.host.id == player_id)
+            raise HTTPException(status_code=403, detail="Only the game owner can start the game")
         elif len(game.players) < 2:
-            raise ValueError("Se necesitan al menos dos jugadores para iniciar el juego")
-        elif game.started:
-            raise ValueError("El juego ya ha comenzado")
+            raise HTTPException(status_code=400, detail="The game must have at least 2 players")
         
         # Actualizar el estado del juego
         put_start_game(self.db, game)
@@ -110,15 +109,17 @@ class GameService:
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
 
+        return {"status": "OK", "message": "Game started"}
+
     def change_turn(self, player_id: int):
         # Obtener el juego asociado al jugador
         game = get_game_by_player_id(self.db, player_id)
         if not game:
-            raise Exception("Error: No existe jugador o no existe la partida")
+            raise Exception("Error: Game not found")
         
         # Verificar si el juego ha comenzado
         if not game.started:
-            raise Exception("Error: La partida todavía no se inicializó")
+            raise Exception("Error: The game has not started")
         
         # Obtener el jugador
         player = get_player(self.db, player_id)
@@ -130,6 +131,6 @@ class GameService:
             
             # Verificar si el turno es válido
             if game.turn > len(game.players) or game.turn <= 0:
-                raise Exception("Error: Turno de jugador que no existe")
+                raise Exception("Error: Invalid turn")
         else:
-            raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
+            raise Exception("Error: The player is not in turn")

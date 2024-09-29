@@ -10,3 +10,4 @@ class PlayerRequest(BaseModel):
 class PlayerOut(BaseModel):
     id: int
     username: str
+    turn: int

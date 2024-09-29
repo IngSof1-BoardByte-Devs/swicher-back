@@ -39,4 +39,4 @@ class MoveService:
             if not game.started:
                 raise Exception("La partida no está empezada")
 
-            return [MovementOut(card_id = m.id, movement_type=m.type) for m in player.movements]
+            return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]
