@@ -15,14 +15,12 @@ async def websocket_handler(websocket: WebSocket):
                 # Extraer el game_id del mensaje
                 game_id = int(data.split(" ", 1)[1])
                 # Desconectar del grupo actual y conectar al nuevo
-                await manager.disconnect(websocket, 0)
-                await manager.connect(websocket, game_id)
+                await manager.move(websocket, 0, game_id)
             elif data.startswith("/leave"):
                 # Extraer el game_id del mensaje
                 game_id = int(data.split(" ", 1)[1])
                 # Desconectar del grupo actual y conectar a la sala 0
-                await manager.disconnect(websocket, game_id)
-                await manager.connect(websocket, 0)
+                await manager.move(websocket, game_id, 0)
             else:
                 pass
     except Exception as e:

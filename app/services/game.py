@@ -57,8 +57,7 @@ class GameService:
         game.host = player
         self.db.commit()
         json_ws = {"game_id": game.id, "game_name": game.name, "num_players": len(game.players)}
-        json_ws = json.dumps(json_ws)
-        self.ws.broadcast(json_ws, 0)
+        self.ws.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
     def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:

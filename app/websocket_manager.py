@@ -18,6 +18,18 @@ class ConnectionManager:
             self.groups[group] = []
         self.groups[group].append(websocket)
 
+    def move(self, websocket: WebSocket, old_group: int, new_group: int):
+        """
+        Mueve al usuario del grupo antiguo al nuevo grupo.
+        """
+        # Desconectar del grupo antiguo
+        self.disconnect(websocket, old_group)
+
+        # Conectar al nuevo grupo
+        if new_group not in self.groups:
+            self.groups[new_group] = []
+        self.groups[new_group].append(websocket)
+
     def disconnect(self, websocket: WebSocket, group: int):
         """
         Elimina al usuario del grupo en el que esté actualmente.
