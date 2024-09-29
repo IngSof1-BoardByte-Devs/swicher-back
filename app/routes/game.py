@@ -24,7 +24,7 @@ import logging
 
 router = APIRouter()
 
-@router.get("/get_game/{game_id}", response_model=SingleGameOut)
+@router.get("/get_game/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
 async def get_game(game_id: int, db: Session = Depends(get_db)):
     """
     Obtiene los jugadores en el juego.
@@ -36,7 +36,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error fetching players: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.get("/", response_model=List[GameOut])
+@router.get("/", response_model=List[GameOut], tags=["Home"])
 async def get_games(db: Session = Depends(get_db)):
     """
     Obtiene los juegos que no han comenzado.
@@ -49,8 +49,8 @@ async def get_games(db: Session = Depends(get_db)):
         logging.error(f"Error fetching games: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.post("/leave_game")
-async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
+@router.post("/leave_game", tags=["In Game"])
+async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db), tags=["In Game"]):
     """
     Ningun jugador puede abandonar una partida no empezada
     Args:
@@ -64,7 +64,7 @@ async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db)):
         logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 
         
-@router.post("/", response_model=GameLeaveCreateResponse)
+@router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     Crea una nueva partida.
@@ -76,10 +76,10 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
         logging.error(f"Error creating game: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")   
     
-@router.post("/{player_id}")
+@router.post("/{player_id}", tags=["Lobby"])
 async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
-    Inicia una partida.
+    Inicia una partida.Home
     """
     service = GameService(db)
     try:
@@ -88,7 +88,7 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/figure-cards/{player_id}", response_model=List[FigureOut])
+@router.get("/figure-cards/{player_id}", response_model=List[FigureOut], tags=["In Game"])
 async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de una figura.
@@ -100,7 +100,7 @@ async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/board/{player_id}", response_model=BoardOut)
+@router.get("/board/{player_id}", response_model=BoardOut, tags=["In Game"])
 async def board(player_id : int, db: Session = Depends(get_db)):
     """
     Obtiene el tablero
@@ -116,7 +116,7 @@ async def board(player_id : int, db: Session = Depends(get_db)):
         logging.error(f"Error get board: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.post("/end-turn")
+@router.post("/end-turn", tags=["In Game"])
 async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
     """
     Termina el turno del jugador.
@@ -130,7 +130,7 @@ async def end_turn(player: PlayerRequest, db: Session = Depends(get_db)):
         logging.error(f"Error end tunr: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/movement-cards", response_model=List[MovementOut])
+@router.get("/movement-cards", response_model=List[MovementOut], tags=["In Game"])
 async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de movimiento de un jugador.

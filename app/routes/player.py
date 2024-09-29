@@ -11,7 +11,7 @@ import logging
 
 router = APIRouter()
 
-@router.post("/", response_model=GameLeaveCreateResponse)
+@router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     Permite a un jugador unirse a una partida.
