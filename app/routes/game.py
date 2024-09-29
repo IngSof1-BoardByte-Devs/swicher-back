@@ -13,11 +13,14 @@ from app.schemas.player import PlayerRequest
 from app.schemas.figure import FigureOut
 from app.services.game import GameService
 from app.services.figures import FigureService
+from app.services.movement import MoveService
 from app.database.session import get_db  # Importa la función para obtener la sesión
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi import HTTPException
 import logging
+
+
 
 router = APIRouter()
 

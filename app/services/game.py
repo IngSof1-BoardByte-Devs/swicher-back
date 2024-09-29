@@ -39,15 +39,19 @@ class GameService:
         player = get_player(self.db, player_id)
         if not player:
             raise Exception("No existe el jugador")
+        
         game = get_game(self.db, game_id)
         if not game:
             raise Exception("No existe la partida")
+        
         if player not in game.players:
             raise Exception("El jugador no esta en esa partida")
-        delete_player(self.db,player, game)
         if len(game.players) == 1:
-            # Avisar el ganador por websocket
-            delete_all_game(self.db, game)
+            raise Exception("No puede abandonar partida el jugador cuando es uno solo")
+        
+        delete_player(self.db,player, game)
+        # Avisar el ganador por websocket
+        # delete_all_game(self.db, game)
    
     def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
         game = create_game(self.db, game_data.game_name)
