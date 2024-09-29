@@ -7,6 +7,7 @@ funciones que realizan operaciones más complejas y que no están directamente r
 from app.database.models import Game, Player
 from app.database.crud import *
 from app.schemas.game import *
+from app.schemas.player import *
 from app.services.movement import MoveService
 from app.services.figures import FigureService
 from app.services.board import BoardService
@@ -23,6 +24,16 @@ class GameService:
         game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games if not g.started]
         return game_list
 
+    def get_game(self, game_id: int) -> List[SingleGameOut]:
+        game = get_game(self.db, game_id)
+        if game == None:
+            raise Exception("Error: Game not found")
+        if game.started:
+            status = "Started"
+        else:
+            status = "Not started"
+        players = [PlayerName(username=player.username) for player in game.players]
+        return SingleGameOut(id=game.id, name=game.name,status=status , players= players)
 
     def leave_game(self, player_id: int, game_id: int):
         player = get_player(self.db, player_id)
@@ -96,12 +107,25 @@ class GameService:
         board_service.create_board(game.id)
 
     def change_turn(self, player_id: int):
-        game = get_game_by_player_id(self.db,player_id)
-        player = get_player(self.db,player_id)
+        # Obtener el juego asociado al jugador
+        game = get_game_by_player_id(self.db, player_id)
+        if not game:
+            raise Exception("Error: No existe jugador o no existe la partida")
+        
+        # Verificar si el juego ha comenzado
+        if not game.started:
+            raise Exception("Error: La partida todavía no se inicializó")
+        
+        # Obtener el jugador
+        player = get_player(self.db, player_id)
+        
+        # Verificar si es el turno del jugador
         if player.turn == game.turn:
-            update_turn_game(self.db,game)
-
-            if game.turn > len(game.players) or game.turn <= 0: 
+            # Actualizar el turno del juego
+            update_turn_game(self.db, game)
+            
+            # Verificar si el turno es válido
+            if game.turn > len(game.players) or game.turn <= 0:
                 raise Exception("Error: Turno de jugador que no existe")
         else:
             raise Exception("Error: El turno del jugador no corresponde con el turno de la partida")
