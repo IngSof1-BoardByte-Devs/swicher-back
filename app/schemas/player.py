@@ -6,3 +6,7 @@ class PlayerName(BaseModel):
 
 class PlayerRequest(BaseModel):
     player_id: int
+
+class PlayerOut(BaseModel):
+    id: int
+    username: str
