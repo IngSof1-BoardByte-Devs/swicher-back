@@ -50,6 +50,6 @@ class FigureService:
         for p in player.game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND:
-                    figures.append(FigureOut(player_id=p.id, card_id=m.id, figure_type=m.type))
+                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
 
         return figures

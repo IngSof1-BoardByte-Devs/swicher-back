@@ -88,7 +88,7 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/figure-cards/{player_id}", response_model=List[FigureOut], tags=["In Game"])
+@router.get("/{id_game}/figure-cards", response_model=List[FigureOut], tags=["In Game"])
 async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de una figura.
