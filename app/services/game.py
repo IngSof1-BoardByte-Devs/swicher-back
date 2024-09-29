@@ -32,7 +32,7 @@ class GameService:
             status = "Started"
         else:
             status = "Not started"
-        players = [PlayerName(username=player.username) for player in game.players]
+        players = [PlayerOut(username=player.username, id=player.id) for player in game.players]
         return SingleGameOut(id=game.id, name=game.name,status=status , players= players)
 
     def leave_game(self, player_id: int, game_id: int):

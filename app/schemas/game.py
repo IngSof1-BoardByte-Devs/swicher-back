@@ -4,7 +4,7 @@ y manejar los datos que se envían y reciben en las peticiones HTTP.
 """
 
 from pydantic import BaseModel
-from .player import PlayerName
+from .player import PlayerOut
 from typing import List
 
 class GameOut(BaseModel):
@@ -16,7 +16,7 @@ class SingleGameOut(BaseModel):
     id: int
     name: str
     status: str
-    players: List[PlayerName]
+    players: List[PlayerOut]
 
 class CreateGame(BaseModel):
     player_name: str
