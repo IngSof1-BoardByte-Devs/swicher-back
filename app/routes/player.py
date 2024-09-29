@@ -21,4 +21,19 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
         return service.join_game(game_data)
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
+        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+    
+
+@router.delete("/{id_player}", tags=["In Game"])
+async def leave_game(id_player: int, db: Session = Depends(get_db)):
+    """
+    Ningun jugador puede abandonar una partida no empezada
+    Args:
+        id_player (int): ID del jugador.
+    """
+    service = GameService(db)
+    try:
+        return service.leave_game(id_player)
+    except Exception as e:
+        logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 

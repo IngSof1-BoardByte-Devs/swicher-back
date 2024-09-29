@@ -32,23 +32,22 @@ class GameService:
         players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
         return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
 
-    def leave_game(self, player_id: int, game_id: int):
+    def leave_game(self, player_id: int):
         player = get_player(self.db, player_id)
         if not player:
-            raise Exception("No existe el jugador")
+            raise HTTPException(status_code=404, detail="Player not found")
         
-        game = get_game(self.db, game_id)
-        if not game:
-            raise Exception("No existe la partida")
+        game = get_game_by_player_id(self.db, player_id)
         
         if player not in game.players:
-            raise Exception("El jugador no esta en esa partida")
+            raise HTTPException(status_code=404, detail="Player not in game")
         if len(game.players) == 1:
-            raise Exception("No puede abandonar partida el jugador cuando es uno solo")
+            raise HTTPException(status_code=404, detail="Can't leave game with only one player")
         
         delete_player(self.db,player, game)
         # Avisar el ganador por websocket
         # delete_all_game(self.db, game)
+        return {"status": "OK", "message": "Player left the game"}
    
     def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
         game = create_game(self.db, game_data.game_name)

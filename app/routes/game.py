@@ -48,21 +48,6 @@ async def get_games(db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error fetching games: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
-@router.post("/leave_game", tags=["In Game"])
-async def leave_game(data: LeaveStartGame, db: Session = Depends(get_db), tags=["In Game"]):
-    """
-    Ningun jugador puede abandonar una partida no empezada
-    Args:
-        player_id (int): ID del jugador.
-        game_id (int): ID del juego.
-    """
-    service = GameService(db)
-    try:
-        return service.leave_game(data.player_id, data.game_id)
-    except Exception as e:
-        logging.error(f"Error leaving game: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)}) 
         
 @router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
@@ -100,18 +85,14 @@ async def get_figure_cards(player_id: int, db: Session = Depends(get_db)):
         logging.error(f"Error getting figure cards: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
 
-@router.get("/board/{player_id}", response_model=BoardOut, tags=["In Game"])
+@router.get("/{id_game}/board", response_model=BoardOut, tags=["In Game"])
 async def board(player_id : int, db: Session = Depends(get_db)):
     """
     Obtiene el tablero
     """
-
     service = BoardService(db)
     try:
-        colors = service.get_board_values(player_id)
-        result = BoardOut
-        result.board = colors
-        return result
+        return service.get_board_values(player_id)
     except Exception as e:
         logging.error(f"Error get board: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})

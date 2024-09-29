@@ -32,4 +32,4 @@ class BoardService:
             for j in range(6):
                 board_values.append(Color(color = matrix[i][j]))
 
-        return board_values
+        return BoardOut(board= board_values)
