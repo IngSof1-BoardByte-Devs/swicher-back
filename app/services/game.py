@@ -51,13 +51,13 @@ class GameService:
         # delete_all_game(self.db, game)
         return {"status": "OK", "message": "Player left the game"}
    
-    def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
+    async def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
         game = create_game(self.db, game_data.game_name)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
         json_ws = {"game_id": game.id, "game_name": game.name, "num_players": len(game.players)}
-        self.ws.broadcast(json.dumps(json_ws), 0)
+        await self.ws.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
     def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:

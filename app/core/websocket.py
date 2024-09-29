@@ -6,8 +6,8 @@ manager = ConnectionManager()
 
 async def websocket_handler(websocket: WebSocket):
     # Conectar al grupo 0 por defecto
-    await manager.connect(websocket, 0)
     try:
+        await manager.connect(websocket, 0)
         while True:
             data = await websocket.receive_text()
             # Si el mensaje es un comando para unirse a una sala

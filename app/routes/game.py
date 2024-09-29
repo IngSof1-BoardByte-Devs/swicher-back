@@ -56,7 +56,7 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return service.create_game(game_data)
+        return await service.create_game(game_data)
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")   

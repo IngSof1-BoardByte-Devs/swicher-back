@@ -44,6 +44,10 @@ class ConnectionManager:
         """
         Envía un mensaje a todas las conexiones de un grupo específico.
         """
-        connections = self.groups.get(group, [])
-        for connection in connections:
-            await connection.send_text(message)
+        async def broadcast(self, message: str, group: int):
+            connections = self.groups.get(group, [])
+            for connection in connections:
+                try:
+                    await connection.send_text(message)
+                except Exception as e:
+                    print(f"Error enviando mensaje: {e}")
