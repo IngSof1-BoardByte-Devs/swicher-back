@@ -4,11 +4,19 @@ y manejar los datos que se envían y reciben en las peticiones HTTP.
 """
 
 from pydantic import BaseModel
+from .player import PlayerName
+from typing import List
 
 class GameOut(BaseModel):
     id: int
     name: str
     num_players: int
+
+class SingleGameOut(BaseModel):
+    id: int
+    name: str
+    status: str
+    players: List[PlayerName]
 
 class CreateGame(BaseModel):
     player_name: str
