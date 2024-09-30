@@ -4,6 +4,7 @@ from app.schemas.game import *
 
 from typing import Dict, List
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 import random
 
 class FigureService:
@@ -38,17 +39,13 @@ class FigureService:
                 figure = player.figures[j]
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
 
-    def get_figures(self, id: int):
-        player = get_player(self.db, id)
-        if player is None:
-            raise Exception("No existe jugador")
-        if player.game.started != True:
-            raise Exception("El juego no ha comenzado")
-        if not player:
-            raise Exception("No existe jugador")
+    def get_figures(self, game_id: int):
+        game = get_game(self.db, game_id)
+        if game is None:
+            HTTPException(status_code=404, detail="Game not found")
         
         figures = []
-        for p in player.game.players:
+        for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND:
                     figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
