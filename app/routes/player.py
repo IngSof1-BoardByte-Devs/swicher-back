@@ -18,7 +18,7 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     try:
         service = GameService(db)
-        return service.join_game(game_data)
+        return await service.join_game(game_data)
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
@@ -33,7 +33,7 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return service.leave_game(id_player)
+        return await service.leave_game(id_player)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
@@ -45,7 +45,7 @@ async def end_turn(id_player: int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        service.change_turn(id_player)
+        await service.change_turn(id_player)
         return {"status": "OK", "message": "Turn ended"}
     
     except Exception as e:

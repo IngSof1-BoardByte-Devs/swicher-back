@@ -28,6 +28,7 @@ app.include_router(player.router, prefix="/players")
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     try:
-        await websocket_handler(websocket)
+        if websocket is not None:
+            await websocket_handler(websocket)
     except Exception as e:
         print(f"Error handling websocket: {e}")
