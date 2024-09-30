@@ -20,7 +20,6 @@ import random
 class GameService:
     def __init__(self, db: Session):
         self.db = db
-        manager
 
     def get_all_games(self) -> List[GameOut]:
         games = fetch_games(self.db)
@@ -50,8 +49,8 @@ class GameService:
 
         json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
         json_ws2 = {"event": "player_left", "data": {"game_id": game.id}}
-        await self.ws.broadcast(json.dumps(json_ws1), game.id)
-        await self.ws.broadcast(json.dumps(json_ws2), 0)
+        await manager.broadcast(json.dumps(json_ws1), game.id)
+        await manager.broadcast(json.dumps(json_ws2), 0)
 
         return {"status": "OK", "message": "Player left the game"}
    
@@ -61,7 +60,7 @@ class GameService:
         game.host = player
         self.db.commit()
         json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
-        await self.ws.broadcast(json.dumps(json_ws), 0)
+        await manager.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
     async def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
@@ -77,8 +76,8 @@ class GameService:
 
         json_ws1 = {"event": "join_game", "data": {"player_id": player.id, "player_name": player.username}}
         json_ws2 = {"event": "new_player", "data": {"game_id": game.id}}
-        await self.ws.broadcast(json.dumps(json_ws1), game.id)
-        await self.ws.broadcast(json.dumps(json_ws2), 0)
+        await manager.broadcast(json.dumps(json_ws1), game.id)
+        await manager.broadcast(json.dumps(json_ws2), 0)
 
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
@@ -124,8 +123,8 @@ class GameService:
 
         #--------------------------hace falta el id?
         ws_json = {"event": "start_game", "data": {"game_id": game.id}}
-        self.ws.broadcast(json.dumps(ws_json), game.id)
-        self.ws.broadcast(json.dumps(ws_json), 0)
+        manager.broadcast(json.dumps(ws_json), game.id)
+        manager.broadcast(json.dumps(ws_json), 0)
 
         return {"status": "OK", "message": "Game started"}
 
@@ -154,4 +153,4 @@ class GameService:
             raise Exception("Error: The player is not in turn")
         
         json_ws = {"event": "change_turn", "data": {"turn": game.turn}}
-        await self.ws.broadcast(json.dumps(json_ws), game.id)
+        await manager.broadcast(json.dumps(json_ws), game.id)
