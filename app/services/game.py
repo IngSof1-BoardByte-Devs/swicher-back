@@ -59,8 +59,11 @@ class GameService:
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
-        await manager.broadcast(json.dumps(json_ws), 0)
+        try:
+            json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
+            await manager.broadcast(json.dumps(json_ws), 0)
+        except Exception as e:
+            print(e)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
     async def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
