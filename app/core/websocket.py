@@ -8,19 +8,19 @@ async def websocket_handler(websocket: WebSocket):
     # Conectar al grupo 0 por defecto
     await websocket.accept()
     await manager.connect(websocket, 0)
-    print("Se ha conectado por primera vez")
+    print("Se entró por primera vez al websocket_handler")
     try:
         while True:
             data = await websocket.receive_text()
 
             if data.startswith("/join "):
-                print("Se ha conectado a una partida")
+                print("Se recibió un mensaje de unirse a la partida")
                 # Desconectar del grupo actual y conectar al nuevo
                 game_id = int(data.split(" ", 1)[1])
                 manager.move(websocket, 0, game_id)
 
             elif data.startswith("/leave"):
-                print("Se ha desconectado de la partida")
+                print("Se recibió un mensaje para volver al home")
                 # Desconectar del grupo actual y conectar a la sala 0
                 game_id = int(data.split(" ", 1)[1])
                 await manager.move(websocket, game_id, 0)
@@ -30,6 +30,6 @@ async def websocket_handler(websocket: WebSocket):
     except Exception as e:
         print(e)
     finally:
-        print("Se ha desconectado")
+        print("Entró al bloque finally y se salió del websocket_handler")
         # Desconectar del websocket cuando se cierra la conexión
         await manager.disconnect(websocket, 0)
