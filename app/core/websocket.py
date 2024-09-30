@@ -1,6 +1,7 @@
 # Lógica de WebSockets
 from fastapi import WebSocket
 from app.websocket_manager import ConnectionManager
+from app.utils.join import join_conecction
 
 manager = ConnectionManager()
 
@@ -16,7 +17,7 @@ async def websocket_handler(websocket: WebSocket):
                 # Desconectar del grupo actual y conectar al nuevo
                 game_id = int(data.split(" ", 1)[1])
                 manager.move(websocket, 0, game_id)
-                await websocket.send_text("You have joined the game" + str(game_id))
+                join_conecction(game_id, websocket)
 
             elif data.startswith("/leave"):
                 # Desconectar del grupo actual y conectar a la sala 0
