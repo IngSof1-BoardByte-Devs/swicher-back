@@ -1,3 +1,4 @@
+import json
 from sqlalchemy.orm import Session
 from app.database.crud import get_game
 from fastapi import WebSocket
@@ -5,9 +6,12 @@ from fastapi import WebSocket
 def join_conecction(db: Session, game_id: int, ws: WebSocket):
     game = get_game(db, game_id)
     if game is None:
-        ws.send_text("Create a game first")
+        json_ws = {"event": "error", "data": {"message": "Game not found"}}
+        ws.send_text(json.dumps(json_ws))
     elif game.started:
-        ws.send_text("The game has already started")
+        json_ws = {"event": "join_ws", "data": {"message": "Game already started", "status": 1}}
+        ws.send_text(json.dumps(json_ws))
     else:
-        ws.send_text("The game is in the lobby")
+        json_ws = {"event": "join_ws", "data": {"message": "You have joined the game", "status": 0}}
+        ws.send_text(json.dumps(json_ws))
     return False
