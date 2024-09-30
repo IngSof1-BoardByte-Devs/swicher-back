@@ -42,4 +42,5 @@ class ConnectionManager:
         """
         connections = self.groups.get(group, [])
         for connection in connections:
-            await connection.send_text(message)
+            if connection is not None:
+                await connection.send_text(message)
