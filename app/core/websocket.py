@@ -6,7 +6,7 @@ manager = ConnectionManager()
 
 async def websocket_handler(websocket: WebSocket):
     # Conectar al grupo 0 por defecto
-    await manager.connect(websocket, 0)
+    await websocket.accept()
     try:
         while True:
             data = await websocket.receive_text()
@@ -22,7 +22,7 @@ async def websocket_handler(websocket: WebSocket):
                 # Desconectar del grupo actual y conectar a la sala 0
                 await manager.move(websocket, game_id, 0)
             else:
-                pass
+                await manager.broadcast(data, 0)
     except Exception as e:
         print(e)
     finally:
