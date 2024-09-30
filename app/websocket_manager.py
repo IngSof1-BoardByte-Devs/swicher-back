@@ -30,7 +30,6 @@ class ConnectionManager:
         Elimina al usuario del grupo en el que esté actualmente.
         """
         if group in self.groups:
-            self.groups[group].remove(websocket)
             print("Se ha desconectado del grupo" + str(group))
             # Si el grupo está vacío, eliminarlo
             if len(self.groups[group]) == 0:
