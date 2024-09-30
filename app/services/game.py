@@ -42,13 +42,15 @@ class GameService:
         
         if player not in game.players:
             raise HTTPException(status_code=404, detail="Player not in game")
-        if len(game.players) == 1:
-            raise HTTPException(status_code=404, detail="Can't leave game with only one player")
         
         delete_player(self.db,player, game)
+        self.db.commit()
 
         json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
         await manager.broadcast(json.dumps(json_ws1), game.id)
+        
+        if len(game.players) == 1:
+            delete_all_game(self.db, game)
 
         return {"status": "OK", "message": "Player left the game"}
    
