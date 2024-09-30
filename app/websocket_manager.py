@@ -36,7 +36,6 @@ class ConnectionManager:
             # Si el grupo está vacío, eliminarlo
             if len(self.groups[group]) == 0:
                 del self.groups[group]
-        await websocket.close()
 
     async def broadcast(self, message: str, group: int):
         """
