@@ -31,4 +31,3 @@ async def websocket_handler(websocket: WebSocket):
     finally:
         # Desconectar del websocket cuando se cierra la conexión
         await manager.disconnect(websocket, 0)
-        print("Se ha desconectado el websocket")
