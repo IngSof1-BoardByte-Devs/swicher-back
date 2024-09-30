@@ -11,7 +11,7 @@ from app.schemas.player import *
 from app.services.movement import MoveService
 from app.services.figures import FigureService
 from app.services.board import BoardService
-from app.websocket_manager import ConnectionManager
+from app.core.websocket import manager
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -20,7 +20,7 @@ import random
 class GameService:
     def __init__(self, db: Session):
         self.db = db
-        self.ws = ConnectionManager()
+        self.ws = manager
 
     def get_all_games(self) -> List[GameOut]:
         games = fetch_games(self.db)

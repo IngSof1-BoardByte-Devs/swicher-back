@@ -12,10 +12,6 @@ class ConnectionManager:
         """
         # Aceptar la conexión
         await websocket.accept()
-
-        # Añadir al grupo actual
-        if group not in self.groups:
-            self.groups[group] = []
         self.groups[group].append(websocket)
 
     def move(self, websocket: WebSocket, old_group: int, new_group: int):
