@@ -48,9 +48,7 @@ class GameService:
         delete_player(self.db,player, game)
 
         json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
-        json_ws2 = {"event": "player_left", "data": {"game_id": game.id}}
         await manager.broadcast(json.dumps(json_ws1), game.id)
-        await manager.broadcast(json.dumps(json_ws2), 0)
 
         return {"status": "OK", "message": "Player left the game"}
    
