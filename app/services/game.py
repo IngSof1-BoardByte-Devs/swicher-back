@@ -60,7 +60,7 @@ class GameService:
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        json_ws = {"evet": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
+        json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
         await self.ws.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
