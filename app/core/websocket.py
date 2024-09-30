@@ -22,6 +22,7 @@ async def websocket_handler(websocket: WebSocket):
                 # Desconectar del grupo actual y conectar a la sala 0
                 game_id = int(data.split(" ", 1)[1])
                 await manager.move(websocket, game_id, 0)
+                websocket.send_text("You have left the game" + str(game_id))
                 
             else:
                 await manager.broadcast(data, 0)
@@ -30,3 +31,4 @@ async def websocket_handler(websocket: WebSocket):
     finally:
         # Desconectar del websocket cuando se cierra la conexión
         await manager.disconnect(websocket, 0)
+        print("Se ha desconectado el websocket")

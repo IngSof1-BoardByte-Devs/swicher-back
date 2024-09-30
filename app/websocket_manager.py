@@ -13,6 +13,7 @@ class ConnectionManager:
         if group not in self.groups:
             self.groups[group] = []
         self.groups[group].append(websocket)
+        print("Se ha conectado al grupo" + str(group))
 
     def move(self, websocket: WebSocket, old_group: int, new_group: int):
         """
@@ -33,9 +34,11 @@ class ConnectionManager:
         """
         if group in self.groups:
             self.groups[group].remove(websocket)
+            print("Se ha desconectado del grupo" + str(group))
             # Si el grupo está vacío, eliminarlo
             if len(self.groups[group]) == 0:
                 del self.groups[group]
+                print("Se ha eliminado el grupo" + str(group))
 
     async def broadcast(self, message: str, group: int):
         """
