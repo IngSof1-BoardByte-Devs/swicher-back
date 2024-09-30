@@ -1,4 +1,3 @@
-# Gestión de las conexiones de WebSocket si es necesario
 from typing import List, Dict
 from fastapi import WebSocket
 
@@ -11,13 +10,18 @@ class ConnectionManager:
         Añade a un usuario al grupo indicado. Si ya está en otro grupo, lo desconecta de ese grupo.
         """
         # Aceptar la conexión
+        if group not in self.groups:
+            self.groups[group] = []
         self.groups[group].append(websocket)
 
     def move(self, websocket: WebSocket, old_group: int, new_group: int):
         """
         Mueve al usuario del grupo antiguo al nuevo grupo.
         """
-        self.groups[old_group].remove(websocket)
+        if old_group in self.groups:
+            self.groups[old_group].remove(websocket)
+        if new_group not in self.groups:
+            self.groups[new_group] = []
         self.groups[new_group].append(websocket)
 
     def disconnect(self, websocket: WebSocket, group: int):

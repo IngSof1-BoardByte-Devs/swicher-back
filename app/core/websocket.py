@@ -7,6 +7,7 @@ manager = ConnectionManager()
 async def websocket_handler(websocket: WebSocket):
     # Conectar al grupo 0 por defecto
     await websocket.accept()
+    await manager.connect(websocket, 0)
     try:
         while True:
             data = await websocket.receive_text()
@@ -28,3 +29,4 @@ async def websocket_handler(websocket: WebSocket):
     finally:
         # Desconectar del websocket cuando se cierra la conexión
         await manager.disconnect(websocket, 0)
+        await websocket.close()
