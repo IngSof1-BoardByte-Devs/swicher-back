@@ -25,6 +25,7 @@ class ConnectionManager:
             self.groups[new_group] = []
             
         self.groups[new_group].append(websocket)
+        print("Se lo a movido al grupo" + str(new_group))
 
     async def disconnect(self, websocket: WebSocket, group: int):
         """

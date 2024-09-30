@@ -16,6 +16,7 @@ async def websocket_handler(websocket: WebSocket):
                 # Desconectar del grupo actual y conectar al nuevo
                 game_id = int(data.split(" ", 1)[1])
                 manager.move(websocket, 0, game_id)
+                websocket.send_text("You have joined the game" + str(game_id))
 
             elif data.startswith("/leave"):
                 # Desconectar del grupo actual y conectar a la sala 0
