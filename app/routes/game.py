@@ -68,7 +68,7 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return service.start_game(player_id)
+        return await service.start_game(player_id)
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})

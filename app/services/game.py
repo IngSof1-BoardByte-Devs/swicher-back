@@ -48,9 +48,10 @@ class GameService:
         
         delete_player(self.db,player, game)
 
-        json_ws = {"event": "leave_game", "player_id": player.id}
-        # otro broadcast para la lista de partidas
-        await self.ws.broadcast(json.dumps(json_ws), game.id)
+        json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
+        json_ws2 = {"event": "player_left", "data": {"game_id": game.id}}
+        await self.ws.broadcast(json.dumps(json_ws1), game.id)
+        await self.ws.broadcast(json.dumps(json_ws2), 0)
 
         return {"status": "OK", "message": "Player left the game"}
    
@@ -59,7 +60,7 @@ class GameService:
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        json_ws = {"new_game": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
+        json_ws = {"evet": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
         await self.ws.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
@@ -74,15 +75,15 @@ class GameService:
             raise Exception("Error: Maximum players allowed")
         player = create_player(self.db, data.player_name, game)
 
-        json_ws1 = {"event": "join_game", "player_id": player.id, "player_name": player.username}
-        json_ws2 = {"event": "new_player", "game_id": game.id}
+        json_ws1 = {"event": "join_game", "data": {"player_id": player.id, "player_name": player.username}}
+        json_ws2 = {"event": "new_player", "data": {"game_id": game.id}}
         await self.ws.broadcast(json.dumps(json_ws1), game.id)
         await self.ws.broadcast(json.dumps(json_ws2), 0)
 
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
 
-    def start_game(self, player_id: int) -> Dict:
+    async def start_game(self, player_id: int) -> Dict:
         player = get_player(self.db, player_id)
         if not player:
             raise HTTPException(status_code=404, detail="Player not found")
@@ -121,6 +122,11 @@ class GameService:
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
 
+        #--------------------------hace falta el id?
+        ws_json = {"event": "start_game", "data": {"game_id": game.id}}
+        self.ws.broadcast(json.dumps(ws_json), game.id)
+        self.ws.broadcast(json.dumps(ws_json), 0)
+
         return {"status": "OK", "message": "Game started"}
 
     async def change_turn(self, player_id: int):
@@ -147,5 +153,5 @@ class GameService:
         else:
             raise Exception("Error: The player is not in turn")
         
-        json_ws = {"event": "change_turn", "turn": game.turn}
+        json_ws = {"event": "change_turn", "data": {"turn": game.turn}}
         await self.ws.broadcast(json.dumps(json_ws), game.id)

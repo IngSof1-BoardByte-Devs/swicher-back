@@ -3,7 +3,7 @@ from fastapi import WebSocket
 
 class ConnectionManager:
     def __init__(self):
-        self.groups: Dict[int, List[WebSocket]] = {}  # Diccionario de grupos con el id de la partida (o 0 si no está en ninguna) y las conexiones de los usuarios
+        self.groups: Dict[int, List[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, group: int):
         """
@@ -24,7 +24,7 @@ class ConnectionManager:
             self.groups[new_group] = []
         self.groups[new_group].append(websocket)
 
-    def disconnect(self, websocket: WebSocket, group: int):
+    async def disconnect(self, websocket: WebSocket, group: int):
         """
         Elimina al usuario del grupo en el que esté actualmente.
         """
@@ -33,6 +33,7 @@ class ConnectionManager:
             # Si el grupo está vacío, eliminarlo
             if len(self.groups[group]) == 0:
                 del self.groups[group]
+        await websocket.close()
 
     async def broadcast(self, message: str, group: int):
         """

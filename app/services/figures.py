@@ -1,6 +1,7 @@
 from app.database.crud import *
 from app.schemas.figure import FigureOut
 from app.schemas.game import *
+
 from typing import Dict, List
 from sqlalchemy.orm import Session
 import random
