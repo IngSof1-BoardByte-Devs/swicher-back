@@ -31,4 +31,4 @@ async def websocket_handler(websocket: WebSocket):
     finally:
         print("Entró al bloque finally y salió del websocket_handler la conexión " + str(websocket))
         # Desconectar del websocket cuando se cierra la conexión
-        await manager.disconnect(websocket, 0)
+        await manager.disconnect(websocket)
