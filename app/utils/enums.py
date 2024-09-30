@@ -33,13 +33,15 @@ class FigureType(Enum):
     TYPE16 = "Type 16"
     TYPE17 = "Type 17"
     TYPE18 = "Type 18"
-    TYPE19 = "Type 19"
-    TYPE20 = "Type 20"
-    TYPE21 = "Type 21"
-    TYPE22 = "Type 22"
-    TYPE23 = "Type 23"
-    TYPE24 = "Type 24"
-    TYPE25 = "Type 25"
+
+class EasyFigureType(Enum):
+    ETYPE1 = "EType 1"
+    ETYPE2 = "EType 2"
+    ETYPE3 = "EType 3"
+    ETYPE4 = "EType 4"
+    ETYPE5 = "EType 5"
+    ETYPE6 = "EType 6"
+    ETYPE7 = "EType 7"
 
 class FigureStatus(Enum):
     DISCARDED = "Discarded"

@@ -56,7 +56,7 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return service.create_game(game_data)
+        return await service.create_game(game_data)
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")   
@@ -68,7 +68,7 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return service.start_game(player_id)
+        return await service.start_game(player_id)
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
