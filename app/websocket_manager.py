@@ -10,7 +10,7 @@ class ConnectionManager:
         Añade a un usuario al grupo indicado. Si ya está en otro grupo, lo desconecta de ese grupo.
         """
         # Aceptar la conexión
-        print("Se ha conectado al grupo " + str(group))
+        print(str(websocket) + "Se ha conectado al grupo " + str(group))
         if group not in self.groups:
             self.groups[group] = []
         self.groups[group].append(websocket)
@@ -24,14 +24,14 @@ class ConnectionManager:
         if new_group not in self.groups:
             self.groups[new_group] = []
         self.groups[new_group].append(websocket)
-        print("Se movió al usuario del grupo " + str(old_group) + " al grupo " + str(new_group))
+        print(str(websocket) + "se movió del grupo " + str(old_group) + " al grupo " + str(new_group))
 
     async def disconnect(self, websocket: WebSocket, group: int):
         """
         Elimina al usuario del grupo en el que esté actualmente.
         """
         if group in self.groups:
-            print("Se borró la conexión del grupo " + str(group))
+            print(str(websocket) + "se borró del grupo " + str(group))
             # Si el grupo está vacío, eliminarlo
             if len(self.groups[group]) == 0:
                 del self.groups[group]
