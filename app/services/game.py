@@ -123,8 +123,8 @@ class GameService:
 
         #--------------------------hace falta el id?
         ws_json = {"event": "start_game", "data": {"game_id": game.id}}
-        manager.broadcast(json.dumps(ws_json), game.id)
-        manager.broadcast(json.dumps(ws_json), 0)
+        await manager.broadcast(json.dumps(ws_json), game.id)
+        await manager.broadcast(json.dumps(ws_json), 0)
 
         return {"status": "OK", "message": "Game started"}
 
