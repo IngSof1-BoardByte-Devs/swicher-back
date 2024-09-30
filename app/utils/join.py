@@ -8,10 +8,11 @@ def join_conecction(db: Session, game_id: int, ws: WebSocket):
     if game is None:
         json_ws = {"event": "join_ws", "data": {"message": "Game not found", "status": 0}}
         ws.send_text(json.dumps(json_ws))
+        return False
     elif game.started:
         json_ws = {"event": "join_ws", "data": {"message": "Game already started", "status": 1}}
         ws.send_text(json.dumps(json_ws))
     else:
         json_ws = {"event": "join_ws", "data": {"message": "You have joined the game", "status": 2}}
         ws.send_text(json.dumps(json_ws))
-    return False
+    return True
