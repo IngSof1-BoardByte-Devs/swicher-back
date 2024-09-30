@@ -1,55 +1,49 @@
 import pytest
 from unittest.mock import MagicMock, Mock
-
 from app.schemas.figure import FigureOut
 from app.services.figures import FigureService
-from app.utils.enums import FigureStatus
+from app.utils.enums import FigureStatus, FigureType
 
 class TestGetFigures:
 
-
-    @pytest.mark.parametrize("player_id, expected_exception, expected_figures", [
-        (123, None, [FigureOut(card_id=1, figure_type="tipo1")]),  
-        (456, Exception("No existe jugador"), None),  
-        (789, None, []),  
+    @pytest.mark.parametrize("player_id, game_started, player_figures, other_players_figures, expected_exception, expected_figures", [
+        (123, True, 
+         [Mock(id=1, type=FigureType.TYPE1, status=FigureStatus.INHAND),
+          Mock(id=2, type=FigureType.TYPE2, status=FigureStatus.INDECK)],
+         [Mock(id=3, type=FigureType.TYPE3, status=FigureStatus.INHAND)],
+         None, 
+         [FigureOut(id_figure=1, type_figure=FigureType.TYPE1, player_id=123),
+          FigureOut(id_figure=3, type_figure=FigureType.TYPE3, player_id=456)]),
+        (456, False, [], [], Exception("El juego no ha comenzado"), None),
+        (789, True, [], [], None, []),
     ])
-    def test_get_figures(self, mocker, player_id, expected_exception, expected_figures):
-        # Simula la función `get_player`
+    def test_get_figures(self, mocker, player_id, game_started, player_figures, other_players_figures, expected_exception, expected_figures):
+        # Mock get_player function
         mock_get_player = mocker.patch("app.services.figures.get_player")
 
-        # Mockea el objeto `player` con figuras (o sin figuras)
-        mock_player = Mock()
-        if player_id == 123:
-            mock_player.figures = [
-                Mock(name='figure_1', id=1, type="tipo1", status=FigureStatus.INHAND),
-                Mock(name='figure_2', id=2, type="tipo3", status=FigureStatus.INDECK),
-            ]
-        elif player_id == 456:
-            mock_player = None
-        elif player_id == 789:
-            mock_player.figures = []
+        # Create mock game
+        mock_game = Mock(started=game_started)
 
-        # Define el valor de retorno esperado
+        # Create mock players
+        mock_player = Mock(id=player_id, figures=player_figures, game=mock_game)
+        mock_other_player = Mock(id=456, figures=other_players_figures)
+
+        # Set up game players
+        mock_game.players = [mock_player, mock_other_player]
+
+        # Set return value for get_player
         mock_get_player.return_value = mock_player
 
-        # Llama a la función `get_figures`
+        # Create FigureService instance
         instance = FigureService(db=MagicMock())
 
         if expected_exception:
-            try:
-                figuras = instance.get_figures(player_id)
-            except Exception:
-                pass  # Test pasa si se lanza la excepción esperada
-            else:
-                raise Exception("La excepción esperada no se lanzó")  # Test falla si no se lanza la excepción
+            with pytest.raises(type(expected_exception)) as exc_info:
+                instance.get_figures(player_id)
+            assert str(exc_info.value) == str(expected_exception)
         else:
-            figuras = instance.get_figures(player_id)
+            figures = instance.get_figures(player_id)
+            assert figures == expected_figures
 
-
-        # Verificaciones
-        if not expected_exception:
-            # Verifica que `get_player` se llame con el ID correcto
-            mock_get_player.assert_called_once_with(instance.db, player_id)
-
-            # Verifica que se devuelvan los objetos `FigureOut` correctos (o una lista vacía)
-            assert figuras == expected_figures
+        # Verify that get_player was called
+        mock_get_player.assert_called_once_with(instance.db, player_id)
