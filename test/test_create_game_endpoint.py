@@ -2,11 +2,10 @@ from app.schemas.game import CreateGame, GameLeaveCreateResponse
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from app.main import app
-from app.schemas.game import GameOut
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from app.database.models import Base, Game
+from sqlalchemy.orm import sessionmaker
+from app.database.models import Base
 
 client = TestClient(app)
 
@@ -21,7 +20,7 @@ def db_session():
     session.close()
 
 # Función de simulación de la operación de la base de datos
-def mock_create_game_service(*args, **kwargs) -> GameLeaveCreateResponse:
+async def mock_create_game_service(*args, **kwargs) -> GameLeaveCreateResponse:
     # Mockear la respuesta del servicio
     return GameLeaveCreateResponse(player_id=1,game_id=1)
 
@@ -33,8 +32,7 @@ def test_create_game_endpoint(db_session):
     with patch('app.services.game.GameService.create_game', new=mock_create_game_service):
         # Enviar solicitud al endpoint
         response = client.post("/games/", json=game_data.model_dump())
-        print("Response: ", response)
 
     # Verificar respuesta
     assert response.status_code == 200
-    assert response.json() == GameLeaveCreateResponse(player_id=1, game_id=1).model_dump()
+    assert response.json() == {'player_id': 1,'game_id': 1}
