@@ -6,44 +6,44 @@ from app.utils.enums import FigureStatus, FigureType
 
 class TestGetFigures:
 
-    @pytest.mark.parametrize("player_id, game_started, player_figures, other_players_figures, expected_exception, expected_figures", [
-        (123, True, 
-         [Mock(id=1, type=FigureType.TYPE1, status=FigureStatus.INHAND),
-          Mock(id=2, type=FigureType.TYPE2, status=FigureStatus.INDECK)],
-         [Mock(id=3, type=FigureType.TYPE3, status=FigureStatus.INHAND)],
-         None, 
-         [FigureOut(id_figure=1, type_figure=FigureType.TYPE1, player_id=123),
-          FigureOut(id_figure=3, type_figure=FigureType.TYPE3, player_id=456)]),
-        (456, False, [], [], Exception("El juego no ha comenzado"), None),
-        (789, True, [], [], None, []),
+    @pytest.mark.parametrize("game_id, game_exists, players_figures, expected_exception, expected_figures", [
+        (123, True, [
+            [Mock(id=1, type=FigureType.TYPE1, status=FigureStatus.INHAND),
+             Mock(id=2, type=FigureType.TYPE2, status=FigureStatus.INDECK)],
+            [Mock(id=3, type=FigureType.TYPE3, status=FigureStatus.INHAND)]
+        ], None, [
+            FigureOut(player_id=1, id_figure=1, type_figure=FigureType.TYPE1),
+            FigureOut(player_id=2, id_figure=3, type_figure=FigureType.TYPE3)
+        ]),
+        (456, False, [], AttributeError, None),
+        (789, True, [[], []], None, []),
     ])
-    def test_get_figures(self, mocker, player_id, game_started, player_figures, other_players_figures, expected_exception, expected_figures):
-        # Mock get_player function
-        mock_get_player = mocker.patch("app.services.figures.get_player")
+    def test_get_figures(self, mocker, game_id, game_exists, players_figures, expected_exception, expected_figures):
+        # Mock get_game function
+        mock_get_game = mocker.patch("app.services.figures.get_game")
 
-        # Create mock game
-        mock_game = Mock(started=game_started)
-
-        # Create mock players
-        mock_player = Mock(id=player_id, figures=player_figures, game=mock_game)
-        mock_other_player = Mock(id=456, figures=other_players_figures)
-
-        # Set up game players
-        mock_game.players = [mock_player, mock_other_player]
-
-        # Set return value for get_player
-        mock_get_player.return_value = mock_player
+        if game_exists:
+            # Create mock game and players
+            mock_game = Mock()
+            mock_players = []
+            for i, figures in enumerate(players_figures):
+                mock_player = Mock(id=i+1, figures=figures)
+                mock_players.append(mock_player)
+            mock_game.players = mock_players
+            mock_get_game.return_value = mock_game
+        else:
+            mock_get_game.return_value = None
 
         # Create FigureService instance
         instance = FigureService(db=MagicMock())
 
         if expected_exception:
-            with pytest.raises(type(expected_exception)) as exc_info:
-                instance.get_figures(player_id)
-            assert str(exc_info.value) == str(expected_exception)
+            with pytest.raises(expected_exception) as exc_info:
+                instance.get_figures(game_id)
+            assert "'NoneType' object has no attribute 'players'" in str(exc_info.value)
         else:
-            figures = instance.get_figures(player_id)
+            figures = instance.get_figures(game_id)
             assert figures == expected_figures
 
-        # Verify that get_player was called
-        mock_get_player.assert_called_once_with(instance.db, player_id)
+        # Verify that get_game was called
+        mock_get_game.assert_called_once_with(instance.db, game_id)
