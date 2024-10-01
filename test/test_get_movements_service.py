@@ -7,7 +7,7 @@ from app.services.movement import MoveService
 class TestGetMovements:
 
     @pytest.mark.parametrize("player_id, game_started, expected_exception, expected_movements", [
-        (123, True, None, [MovementOut(card_id=1, movement_type="tipo1"), MovementOut(card_id=2, movement_type="tipo3")]),  # Jugador con cartas
+        (123, True, None, [MovementOut(id_movement=1, type_movement="tipo1"), MovementOut(id_movement=2, type_movement="tipo3")]),  # Jugador con cartas
         (456, True, Exception("No existe jugador"), None),  # Jugador no existe
         (789, True, None, []),  # Jugador sin cartas
         (101, False, Exception("La partida no está empezada"), None),  # Partida no empezada
