@@ -33,8 +33,6 @@ class FigureType(Enum):
     TYPE16 = "Type 16"
     TYPE17 = "Type 17"
     TYPE18 = "Type 18"
-
-class EasyFigureType(Enum):
     ETYPE1 = "EType 1"
     ETYPE2 = "EType 2"
     ETYPE3 = "EType 3"

@@ -15,10 +15,17 @@ class FigureService:
         game = get_game(self.db, game_id)
         deck = []
 
-        # Creo un mazo de 92 figuras
-        types = list(FigureType.__members__.values())
-        for i in range(92):
-            figure_type = types[i % len(types)]
+        # Agrego las figuras simples al mazo
+        easyTypes = [member for name, member in FigureType.__members__.items() if name.startswith('ETYPE')]
+        for i in range(len(game.players) * 7):
+            figure_type = random.choice(easyTypes)
+            figure = new_figure(self.db, figure_type, game)
+            deck.append(figure)
+
+        # Agrego las figuras complejas al mazo
+        complexTypes = list(member for name, member in FigureType.__members__.items() if name.startswith('TYPE'))
+        for i in range(len(game.players) * 18):
+            figure_type = random.choice(complexTypes)
             figure = new_figure(self.db, figure_type, game)
             deck.append(figure)
         
