@@ -18,6 +18,7 @@ class Game(Base):
     turn = Column(Integer, default=0)
     bloqued_color = Column(Integer, default=None)
     board = Column(String)
+    parcial_movements = Column(String)
     
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
@@ -25,15 +26,25 @@ class Game(Base):
     movements = relationship("Movement", back_populates="game", cascade="all, delete-orphan")
     figures = relationship("Figure", cascade="all, delete-orphan")
 
-    # Método para obtener la matriz del tablero
+    # Métodos para manejar la matriz del tablero
     @property
     def board_matrix(self):
         return json.loads(self.board)
-
-    # Método para establecer la matriz del tablero
+    
     @board_matrix.setter
     def board_matrix(self, matrix):
         self.board = json.dumps(matrix)
+
+    # Métodos para manejar la lista de movimientos parciales
+    @property
+    def parcial_movements_list(self):
+        return json.loads(self.parcial_movements)
+    
+    @parcial_movements_list.setter
+    def add_parcial_movement(self, Movement, x, y):
+        parcial_movements = json.loads(self.parcial_movements)
+        parcial_movements.append({ 'movement': Movement, 'x': x, 'y': y })
+        self.parcial_movements = json.dumps(parcial_movements)
 
 class Player(Base):
     __tablename__ = 'players'
