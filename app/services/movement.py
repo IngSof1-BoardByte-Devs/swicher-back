@@ -42,17 +42,21 @@ class MoveService:
 
             return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]
     
-    def set_parcial_movement(self, id: int, x: int, y: int, id_move: int) -> Movement:
+    def set_parcial_movement(self, id_move: int, x1: int, x2: int, y1: int, y2:int ) -> Movement:
         move = get_movement(self.db, id_move)
         if not move:
             raise HTTPException(status_code=404, error="the movement card doesn't exist")
         game = move.game
 
-        update_parcial_movement(self.db, x, y, move)
+        if not self.validate_movement(id_move, x1, x2, y1, y2 ):
+            raise HTTPException(status_code=404, error="this movement is incorrect")
+
+        update_parcial_movement(self.db, move, x1, x2, y1, y2)
 
         return move
+        
     
-    def validate_movement(self, id: int, x: int, y: int, id_move: int) -> Movement:
+    def validate_movement(self, id_move: int, x1: int, x2: int, y1: int, y2:int ) -> bool:
         move = get_movement(self.db, id_move)
         if not move:
             raise HTTPException(status_code=404, error="the movement card doesn't exist")
@@ -60,8 +64,10 @@ class MoveService:
 
         if game.turn != move.player.turn:
             raise HTTPException(status_code=404, error="It's not your turn")
+        
+        valid_moves = ValidMoves[move.type].value
 
-        if game.board_matrix[x][y] != -1:
-            raise HTTPException(status_code=404, error="The cell is not empty")
+        for dx, dy in valid_moves:
+            if x1 == y1 + dx and x2 == y2 + dy: return True
 
-        return move
+        return False

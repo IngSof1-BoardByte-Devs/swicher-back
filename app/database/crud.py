@@ -123,8 +123,8 @@ def get_game_by_player_id(db: Session, player_id: int) -> Game:
 
 # Manejo de Movimientos
 
-def update_parcial_movement(db: Session, game: Game, movement: Movement, x: int, y: int):
-    game.parcial_movements_list = (movement, x, y)
+def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int, x2: int, y1: int, y2: int):
+    game.parcial_movements_list = (movement, x1, x2, y1, y2)
     movement.status = MovementStatus.DISCARDED
     movement.player = None
     db.commit()

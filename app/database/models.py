@@ -41,9 +41,9 @@ class Game(Base):
         return json.loads(self.parcial_movements)
     
     @parcial_movements_list.setter
-    def add_parcial_movement(self, Movement, x, y):
+    def add_parcial_movement(self, Movement, x1, x2, y1, y2):
         parcial_movements = json.loads(self.parcial_movements)
-        parcial_movements.append({ 'movement': Movement, 'x': x, 'y': y })
+        parcial_movements.append({ 'movement': Movement, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2 })
         self.parcial_movements = json.dumps(parcial_movements)
 
 class Player(Base):
