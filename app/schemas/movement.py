@@ -11,3 +11,8 @@ class Movement(BaseModel):
     card_id: int
     id_player: int
     type: int
+
+class MovementPartial(BaseModel):
+    playerId: int
+    index1: int
+    index2: int
