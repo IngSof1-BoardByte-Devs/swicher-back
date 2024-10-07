@@ -8,6 +8,6 @@ class MovementRequest(BaseModel):
     player_id: int
 
 class Movement(BaseModel):
-    id: int
+    card_id: int
     id_player: int
     type: int

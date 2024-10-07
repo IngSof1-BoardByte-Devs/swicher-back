@@ -51,7 +51,7 @@ class BoardService:
         update_board(self.db, game, matrix)
         return matrix
     
-    def switch_values(self, id_move: int, x: int, y: int) -> Movement:
+    def switch_values(self, id_move: int, id_player: int, x: int, y: int) -> Movement:
         # Obtener la posición desde un array
         x1 = x // 6
         x2 = x % 6
@@ -61,7 +61,7 @@ class BoardService:
 
         # Guardar el movimiento parcial
         move = MoveService
-        movement = move.set_parcial_movement(self.db, id_move, x1, x2, y1, y2)
+        movement = move.set_parcial_movement(self.db, id_move, id_player, x1, x2, y1, y2)
 
         # Cambiar los valores de la matriz
         matrix = self.switch_values(game, x1, x2, y1, y2)
@@ -69,4 +69,4 @@ class BoardService:
         # Guardar la matriz en la base de datos
         update_board(self.db, game, matrix)
 
-        return MovementOut(id= movement.id, id_player= movement.id_player, type= movement.type)
+        return Movement(card_id= movement.id, id_player= movement.id_player, type= movement.type)
