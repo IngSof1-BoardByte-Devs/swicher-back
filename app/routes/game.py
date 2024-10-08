@@ -24,15 +24,6 @@ import logging
 
 router = APIRouter()
 
-"""
-Información de partida 
-Error Response:
-Code: 404
-Content: { "detail" : "Partida no encontrada" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.get("/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
 async def get_game(game_id: int, db: Session = Depends(get_db)):
     """
@@ -50,12 +41,6 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
     
 
-"""
-Listar Partidas
-Error Response:
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.get("/", response_model=List[GameOut], tags=["Home"])
 async def get_games(db: Session = Depends(get_db)):
     """
@@ -70,18 +55,6 @@ async def get_games(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal server error")
     
 
-"""
-Crear Partida (pública)
-Error Response:
-Code: 400
-Content: { "detail" : "La partida debe tener un nombre" }
-OR
-Code: 400
-Content: { "detail" : "El jugador debe tener un nombre" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
@@ -97,24 +70,7 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
-"""
-Iniciar Partida
-Error Response:
-Code: 400
-Content: { "detail" : "La partida ya se inició" }
-OR
-Code: 400
-Content: { "detail" : "La partida debe tener entre 2 a 4 jugadores para iniciar" }
-OR
-Code: 401
-Content: { "detail" : "Sólo el dueño puede iniciar la partida" }
-OR
-Code: 404
-Content: { "detail" : "Jugador no encontrado" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
+
 @router.put("/{player_id}", tags=["Lobby"])
 async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
@@ -135,18 +91,6 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
        
 
-"""
-Obtener Cartas de Figura
-Error Response:
-Code: 400
-Content: { "detail" : "Partida no iniciada" }
-OR
-Code: 404
-Content: { "detail" : "Partida no encontrada" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.get("/{id_game}/figure-cards", response_model=List[FigureOut], tags=["In Game"])
 async def get_figure_cards(id_game: int, db: Session = Depends(get_db)):
     """
@@ -165,18 +109,6 @@ async def get_figure_cards(id_game: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-"""
-Ver el Tablero
-Error Response:
-Code: 400
-Content: { "detail" : "Partida no iniciada" }
-OR
-Code: 404
-Content: { "detail" : "Partida no encontrada" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.get("/{id_game}/board", response_model=BoardOut, tags=["In Game"])
 async def board(id_game : int, db: Session = Depends(get_db)):
     """
@@ -195,18 +127,6 @@ async def board(id_game : int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-"""
-Obtener cartas Movimientos
-Error Response:
-Code: 400
-Content: { "detail" : "Partida no iniciada" }
-OR
-Code: 404
-Content: { "detail" : "Jugador no encontrado" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.get("/{player_id}/move-cards", response_model=List[MovementOut], tags=["In Game"])
 async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
     """

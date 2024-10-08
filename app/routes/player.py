@@ -11,24 +11,6 @@ import logging
 
 router = APIRouter()
 
-"""
-Unirse a Partida
-Error Response:
-Code: 400
-Content: { "detail" : "El jugador debe tener un nombre" }
-OR
-Code: 400
-Content: { "detail" : "Partida ya iniciada" }
-OR
-Code: 400
-Content: { "detail" : "Partida con máximo de jugadores permitidos" }
-OR
-Code: 404
-Content: { "detail" : "Partida no encontrada" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
@@ -49,15 +31,6 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-"""
-Abandonar Partida
-Error Response:
-Code: 404
-Content: { "detail" : "Jugador no encontrado" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.delete("/{id_player}", tags=["In Game"])
 async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
@@ -75,21 +48,6 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
-"""
-Terminar Turno
-Error Response:
-Code: 400
-Content: { "detail" : "Partida no iniciada" }
-OR
-Code: 401
-Content: { "detail" : "No es turno del jugador" }
-OR
-Code: 404
-Content: { "detail" : "Jugador no encontrado" }
-OR
-Code: 500
-Content: { "detail" : "Internal server error" }
-"""
 @router.put("/{id_player}/turn", tags=["In Game"])
 async def end_turn(id_player: int, db: Session = Depends(get_db)):
     """
