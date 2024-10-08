@@ -31,12 +31,11 @@ class MoveService:
 
     def get_movements(self, id: int):
             player = get_player(self.db,id)
-            game = get_game_by_player_id(self.db,id)
-
             if not player:
-                raise Exception("No existe jugador")
-
+                raise Exception("Jugador no encontrado")
+            
+            game = get_game_by_player_id(self.db,id)
             if not game.started:
-                raise Exception("La partida no está empezada")
+                raise Exception("Partida no iniciada")
 
             return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]

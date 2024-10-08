@@ -41,8 +41,10 @@ class FigureService:
 
     def get_figures(self, game_id: int):
         game = get_game(self.db, game_id)
-        if game is None:
-            HTTPException(status_code=404, detail="Game not found")
+        if not game:
+            raise Exception("Partida no encontrada")
+        if not game.started:
+            raise Exception("Partida no iniciada")
         
         figures = []
         for p in game.players:
