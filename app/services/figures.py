@@ -13,32 +13,41 @@ class FigureService:
 
     def create_figure_deck(self, game_id: int) -> Dict:
         game = get_game(self.db, game_id)
-        deck = []
+        easy_deck = []
+        complex_deck = []
 
-        # Agrego las figuras simples al mazo
-        easyTypes = [member for name, member in FigureType.__members__.items() if name.startswith('ETYPE')]
-        for i in range(len(game.players) * 7):
+        # Agrego las figuras fáciles al mazo
+        easyTypes = [member for name, member in FigureType.__members__.items() if 19 <= int(name[4:]) <= 25]
+        for i in range(14):
             figure_type = easyTypes[i % len(easyTypes)]
             figure = new_figure(self.db, figure_type, game)
-            deck.append(figure)
+            easy_deck.append(figure)
 
         # Agrego las figuras complejas al mazo
-        complexTypes = list(member for name, member in FigureType.__members__.items() if name.startswith('TYPE'))
-        for i in range(len(game.players) * 18):
+        complexTypes = [member for name, member in FigureType.__members__.items() if 1 <= int(name[4:]) <= 18]
+        for i in range(36):
             figure_type = complexTypes[i % len(complexTypes)]
             figure = new_figure(self.db, figure_type, game)
-            deck.append(figure)
-        
+            complex_deck.append(figure)
         
         # Barajo el mazo
-        random.shuffle(deck)
+        random.shuffle(easy_deck)
+        random.shuffle(complex_deck)
 
-        # Asigno las figuras a los jugadores
-        for j in range(23):
+        # Asigno las figuras fáciles a los jugadores
+        for j in range(14 // len(game.players)):
             for i in range(len(game.players)):
                 player = game.players[i]
-                figure = random.choice(deck)
-                deck.remove(figure)
+                figure = random.choice(easy_deck)
+                easy_deck.remove(figure)
+                put_asign_figure(self.db, figure, player)
+        
+        # Asigno las figuras complejas a los jugadores
+        for j in range(36 // len(game.players)):
+            for i in range(len(game.players)):
+                player = game.players[i]
+                figure = random.choice(complex_deck)
+                complex_deck.remove(figure)
                 put_asign_figure(self.db, figure, player)
         
         
