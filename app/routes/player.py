@@ -11,6 +11,24 @@ import logging
 
 router = APIRouter()
 
+"""
+Unirse a Partida
+Error Response:
+Code: 400
+Content: { "detail" : "El jugador debe tener un nombre" }
+OR
+Code: 400
+Content: { "detail" : "Partida ya iniciada" }
+OR
+Code: 400
+Content: { "detail" : "Partida con máximo de jugadores permitidos" }
+OR
+Code: 404
+Content: { "detail" : "Partida no encontrada" }
+OR
+Code: 500
+Content: { "detail" : "Internal server error" }
+"""
 @router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
 async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
@@ -21,9 +39,25 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
         return await service.join_game(game_data)
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
-    
+        if (str(e) == "El jugador debe tener un nombre"
+            or str(e) == "Partida ya iniciada"
+            or str(e) == "Partida con máximo de jugadores permitidos"):
+            raise HTTPException(status_code=400, detail=str(e))
+        elif str(e) == "Partida no encontrada":
+            raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
 
+
+"""
+Abandonar Partida
+Error Response:
+Code: 404
+Content: { "detail" : "Jugador no encontrado" }
+OR
+Code: 500
+Content: { "detail" : "Internal server error" }
+"""
 @router.delete("/{id_player}", tags=["In Game"])
 async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
@@ -36,8 +70,26 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
         return await service.leave_game(id_player)
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+        if str(e) == "Jugador no encontrado":
+            raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
 
+"""
+Terminar Turno
+Error Response:
+Code: 400
+Content: { "detail" : "Partida no iniciada" }
+OR
+Code: 401
+Content: { "detail" : "No es turno del jugador" }
+OR
+Code: 404
+Content: { "detail" : "Jugador no encontrado" }
+OR
+Code: 500
+Content: { "detail" : "Internal server error" }
+"""
 @router.put("/{id_player}/turn", tags=["In Game"])
 async def end_turn(id_player: int, db: Session = Depends(get_db)):
     """
@@ -49,5 +101,12 @@ async def end_turn(id_player: int, db: Session = Depends(get_db)):
         return {"status": "OK", "message": "Turn ended"}
     
     except Exception as e:
-        logging.error(f"Error end tunr: {str(e)}")
-        raise HTTPException(status_code=400, detail={"status": "ERROR", "message": str(e)})
+        logging.error(f"Error end turn: {str(e)}")
+        if str(e) == "Partida no iniciada":
+            raise HTTPException(status_code=400, detail=str(e))
+        elif str(e) == "No es turno del jugador":
+            raise HTTPException(status_code=401, detail=str(e))
+        elif str(e) == "Jugador no encontrado":
+            raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
