@@ -24,9 +24,12 @@ class BoardService:
 
     def get_board_values(self, id_game: int) -> List[Color]:
         game = get_game(self.db, id_game)
+        if not game:
+            raise Exception("Partida no encontrada")
+        elif not game.started:
+            raise Exception("Partida no iniciada")
         matrix = game.board_matrix
         board_values = []
-        color = Color
         # Guardar todo como una lista de enteros
         for i in range(6):
             for j in range(6):

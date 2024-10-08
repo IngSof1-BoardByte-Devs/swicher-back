@@ -17,8 +17,9 @@ def mock_board_service(mocker):
 
 @pytest.mark.parametrize("game_id, service_return, expected_status, expected_response", [
     (1, BoardOut(board=[Color(color=i) for i in range(36)]), 200, {"board": [{"color": i} for i in range(36)]}),
-    (2, Exception("Error retrieving board"), 400, {"detail": {"status": "ERROR", "message": "Error retrieving board"}}),
-    (3, Exception("Game not found"), 400, {"detail": {"status": "ERROR", "message": "Game not found"}}),
+    (2, Exception("Partida no iniciada"), 400, {"detail": "Partida no iniciada"}),
+    (3, Exception("Partida no encontrada"), 404, {"detail": "Partida no encontrada"}),
+    (1, Exception("Internal server error"), 500, {"detail": "Internal server error"}),
 ])
 def test_get_board(client, mock_board_service, game_id, service_return, expected_status, expected_response):
     if isinstance(service_return, Exception):
