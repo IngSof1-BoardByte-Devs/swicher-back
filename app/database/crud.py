@@ -20,8 +20,6 @@ def create_game(db: Session, name: str) -> Game:
     return new_game
 
 def create_player(db: Session, username: str, game: Game) -> Player:
-    if not username or not game:
-        raise ValueError("Invalid arguments")
     new_player = Player(username=username, game=game)
     db.add(new_player)
     db.flush()

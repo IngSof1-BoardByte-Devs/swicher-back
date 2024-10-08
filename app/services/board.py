@@ -30,6 +30,10 @@ class BoardService:
     def get_board_values(self, id_game: int) -> List[Color]:
         print("llega acá 3")
         game = get_game(self.db, id_game)
+        if not game:
+            raise Exception("Partida no encontrada")
+        elif not game.started:
+            raise Exception("Partida no iniciada")
         matrix = game.board_matrix
         board_values = []
         for i in range(36):
