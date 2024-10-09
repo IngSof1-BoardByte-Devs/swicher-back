@@ -39,7 +39,7 @@ class GameService:
             raise Exception("Jugador no encontrado")
         
         game = get_game_by_player_id(self.db, player_id)
-        
+
         if player not in game.players:
             raise Exception("Player not in game")
         
@@ -143,12 +143,12 @@ class GameService:
         if not player:
             raise Exception("Jugador no encontrado")
         
+        # Obtener el juego asociado al jugador
+        game = get_game_by_player_id(self.db, player_id)
+        
         # Verificar si el juego ha comenzado
         if not game.started:
             raise Exception("Partida no iniciada")
-        
-        # Obtener el juego asociado al jugador
-        game = get_game_by_player_id(self.db, player_id)
         
         # Verificar si es el turno del jugador
         if player.turn == game.turn:
