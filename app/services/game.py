@@ -51,7 +51,7 @@ class GameService:
         delete_player(self.db,player, game)
         self.db.commit()
 
-        json_ws = {"event": "user.left", "payload": {"game_id": game.id, "username": player.username}}
+        json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
         await manager.broadcast(json.dumps(json_ws), game.id)
         await manager.broadcast(json.dumps(json_ws), 0)
         
