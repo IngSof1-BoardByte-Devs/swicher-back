@@ -139,9 +139,7 @@ class GameService:
 
     async def change_turn(self, player_id: int):
         # Obtener el jugador
-        print("print 1")
         player = get_player(self.db, player_id)
-        print("print 2")
         if not player:
             raise Exception("Jugador no encontrado")
         
