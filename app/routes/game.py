@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, Response
 from app.schemas.game import *
 from app.schemas.player import PlayerRequest
 from app.schemas.figure import FigureOut
+from app.schemas.movement import Movement, MovementPartial
 from app.services.game import GameService
 from app.services.figures import FigureService
 from app.services.movement import MoveService

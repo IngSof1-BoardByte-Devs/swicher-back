@@ -37,7 +37,6 @@ class MoveService:
             if not player:
                 raise Exception("Jugador no encontrado")
             
-            game = get_game_by_player_id(self.db,id)
             if not game.started:
                 raise Exception("Partida no iniciada")
 
@@ -47,31 +46,32 @@ class MoveService:
         move = get_movement(self.db, id_move)
         if not move:
             raise Exception("La carta de movimiento no existe")
+        
         game = move.game
+        player = get_player(self.db, id_player)
+        if game.turn != player.turn:
+            raise Exception("No es tu turno")
 
-        if move.player.id != id_player:
+        if move.status != MovementStatus.INHAND or move.player.id != id_player:
             raise Exception("La carta no te pertenece")
 
-        """ if not self.validate_movement(id_move, x1, x2, y1, y2 ):
-            raise Exception("Movimiento no válido") """
+        if not self.validate_movement(id_move, x1, x2, y1, y2 ):
+            raise Exception("La carta no es válida para ese movimiento")
 
-        update_parcial_movement(self.db, move, x1, x2, y1, y2)
+        update_parcial_movement(self.db, game, move, x1, x2, y1, y2)
 
-        return move
+        return Movement(card_id = move.id, id_player = id_player, type = move.type)
         
     
-    """ def validate_movement(self, id_move: int, x1: int, x2: int, y1: int, y2:int ) -> bool:
+    def validate_movement(self, id_move: int, x1: int, x2: int, y1: int, y2:int ) -> bool:
         move = get_movement(self.db, id_move)
         if not move:
-            raise HTTPException(status_code=404, error="the movement card doesn't exist")
-        game = move.game
-
-        if game.turn != move.player.turn:
-            raise HTTPException(status_code=404, error="It's not your turn")
+            raise Exception("La carta de movimiento no existe")
         
-        valid_moves = ValidMoves[move.type].value
+        valid_moves = ValidMoves[str(move.type).replace("MovementType.", "")].value
 
         for dx, dy in valid_moves:
+            print(x1, y1, x2, y2, dx, dy)
             if x1 == y1 + dx and x2 == y2 + dy: return True
-
-        return False """
+        
+        return False

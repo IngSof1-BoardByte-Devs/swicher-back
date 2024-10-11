@@ -139,16 +139,18 @@ class GameService:
 
     async def change_turn(self, player_id: int):
         # Obtener el jugador
+        print("print 1")
         player = get_player(self.db, player_id)
+        print("print 2")
         if not player:
             raise Exception("Jugador no encontrado")
+        
+        # Obtener el juego asociado al jugador
+        game = get_game_by_player_id(self.db, player_id)
         
         # Verificar si el juego ha comenzado
         if not game.started:
             raise Exception("Partida no iniciada")
-        
-        # Obtener el juego asociado al jugador
-        game = get_game_by_player_id(self.db, player_id)
         
         # Verificar si es el turno del jugador
         if player.turn == game.turn:
