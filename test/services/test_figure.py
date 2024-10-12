@@ -15,7 +15,7 @@ class TestGetFigures:
             FigureOut(player_id=1, id_figure=1, type_figure=FigureType.TYPE1),
             FigureOut(player_id=2, id_figure=3, type_figure=FigureType.TYPE3)
         ]),
-        (456, False, [], AttributeError, None),
+        (456, False, [], Exception("Partida no encontrada"), None),
         (789, True, [[], []], None, []),
     ])
     def test_get_figures(self, mocker, game_id, game_exists, players_figures, expected_exception, expected_figures):
@@ -37,10 +37,9 @@ class TestGetFigures:
         # Create FigureService instance
         instance = FigureService(db=MagicMock())
 
-        if expected_exception:
-            with pytest.raises(expected_exception) as exc_info:
+        if isinstance(expected_exception, Exception):
+            with pytest.raises(Exception, match=str(expected_exception)) as exc_info:
                 instance.get_figures(game_id)
-            assert "'NoneType' object has no attribute 'players'" in str(exc_info.value)
         else:
             figures = instance.get_figures(game_id)
             assert figures == expected_figures

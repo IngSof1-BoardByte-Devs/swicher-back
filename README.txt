@@ -8,7 +8,12 @@
     ` pip install -r requeriments.txt`
 - Para correr el servidor (Pararse en la carpeta swicher-back):
     ` uvicorn app.main:app --reload`
-
+-----------Run Coverage---------------
+Para correr coverage
+    `coverage run -m pytest`   
+Para ver el reporte correr  
+    `coverage report`
+-------------------------------------
 
 Contrato de la API:
 

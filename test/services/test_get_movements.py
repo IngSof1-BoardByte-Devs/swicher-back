@@ -8,9 +8,9 @@ class TestGetMovements:
 
     @pytest.mark.parametrize("player_id, game_started, expected_exception, expected_movements", [
         (123, True, None, [MovementOut(id_movement=1, type_movement="tipo1"), MovementOut(id_movement=2, type_movement="tipo3")]),  # Jugador con cartas
-        (456, True, Exception("No existe jugador"), None),  # Jugador no existe
+        (456, True, Exception("Jugador no encontrado"), None),  # Jugador no existe
         (789, True, None, []),  # Jugador sin cartas
-        (101, False, Exception("La partida no está empezada"), None),  # Partida no empezada
+        (101, False, Exception("Partida no iniciada"), None),  # Partida no empezada
     ])
     def test_get_movements(self, mocker, player_id, game_started, expected_exception, expected_movements):
         # Simula la función `get_player`

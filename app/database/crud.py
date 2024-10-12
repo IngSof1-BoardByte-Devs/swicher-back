@@ -98,7 +98,7 @@ def put_asign_turn(db: Session, player: Player, turn: int):
 def update_board(db: Session, game: Game, matrix: list):
     game.board_matrix = matrix
     db.commit()
-    return game
+    return matrix
 
 def get_player(db: Session, id: int) -> Player | None:
     return db.query(Player).get(id)
@@ -117,3 +117,26 @@ def update_turn_game(db : Session, game: Game):
 def get_game_by_player_id(db: Session, player_id: int) -> Game:
     player = get_player(db, player_id)
     return player.game
+
+
+# Manejo de Movimientos
+
+def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int, x2: int, y1: int, y2: int):
+    game.parcial_movements_list = (movement, x1, x2, y1, y2)
+    movement.status = MovementStatus.DISCARDED
+    movement.player = None
+    db.commit()
+
+def get_game_by_move_id(db: Session, movement_id: int) -> Game:
+    movement = db.query
+    return movement.game
+
+def get_movement(db: Session, movement_id: int) -> Movement:
+    return db.query(Movement).get(movement_id)
+
+def clear_parcial_movements(db: Session, game: Game):
+    game.parcial_movements = []
+    db.commit()
+
+def parcial_movements_exist(game: Game) -> bool:
+    return len(game.parcial_movements) != 0

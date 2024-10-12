@@ -13,32 +13,52 @@ class FigureService:
 
     def create_figure_deck(self, game_id: int) -> Dict:
         game = get_game(self.db, game_id)
-        deck = []
+        easy_deck = []
+        complex_deck = []
 
-        # Creo un mazo de 92 figuras
-        types = list(FigureType.__members__.values())
-        for i in range(92):
-            figure_type = types[i % len(types)]
+        # Agrego las figuras fáciles al mazo
+        easyTypes = [member for name, member in FigureType.__members__.items() if 19 <= int(name[4:]) <= 25]
+        for i in range(14):
+            figure_type = easyTypes[i % len(easyTypes)]
             figure = new_figure(self.db, figure_type, game)
-            deck.append(figure)
+            easy_deck.append(figure)
+
+        # Agrego las figuras complejas al mazo
+        complexTypes = [member for name, member in FigureType.__members__.items() if 1 <= int(name[4:]) <= 18]
+        for i in range(36):
+            figure_type = complexTypes[i % len(complexTypes)]
+            figure = new_figure(self.db, figure_type, game)
+            complex_deck.append(figure)
         
         # Barajo el mazo
-        random.shuffle(deck)
+        random.shuffle(easy_deck)
+        random.shuffle(complex_deck)
 
-        # Asigno las figuras a los jugadores
-        for i in range(len(game.players)):
-            player = game.players[i]
-            for j in range(23):
-                figure = deck.pop()
+        # Asigno las figuras fáciles a los jugadores
+        for j in range(14 // len(game.players)):
+            for i in range(len(game.players)):
+                player = game.players[i]
+                figure = random.choice(easy_deck)
+                easy_deck.remove(figure)
                 put_asign_figure(self.db, figure, player)
+        
+        # Asigno las figuras complejas a los jugadores
+        for j in range(36 // len(game.players)):
+            for i in range(len(game.players)):
+                player = game.players[i]
+                figure = random.choice(complex_deck)
+                complex_deck.remove(figure)
+                put_asign_figure(self.db, figure, player)
+        
         
         # Asigno las figuras que van a iniciar en juego
         for i in range(len(game.players)):
             player = game.players[i]
-            for j in range(3):  # Cantidad de figuras sobre la mesa (no me acuerdo cuantas son)
-                figure = player.figures[j]
+            # Selecciona 3 figuras únicas del jugador
+            selected_figures = random.sample(player.figures, 3)
+            for figure in selected_figures:
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
-
+                
     def get_figures(self, game_id: int):
         game = get_game(self.db, game_id)
         if not game:
