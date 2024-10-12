@@ -79,7 +79,7 @@ class TestGameService:
         with pytest.raises(Exception) as context:
             await instance.join_game(data)
 
-        assert str(context.value) == "Error: User tries to join a non-existent game"
+        assert str(context.value) == "Partida no encontrada"
 
 
     @patch('app.services.game.get_game')
@@ -97,4 +97,33 @@ class TestGameService:
         with pytest.raises(Exception) as context:
             await instance.join_game(data)
 
-        assert str(context.value) == "Error: Maximum players allowed"
+        assert str(context.value) == "Partida con máximo de jugadores permitidos"
+
+    async def test_join_game_not_name(self):
+        # Configuración del mock para un juego con 4 jugadores
+
+        data = JoinGame(player_name="",game_id=1)
+        instance = GameService(db=MagicMock())
+
+        # Verificar que se lanza la excepción
+        with pytest.raises(Exception) as context:
+            await instance.join_game(data)
+
+        assert str(context.value) == "El jugador debe tener un nombre"
+
+    @patch('app.services.game.get_game')
+    async def test_join_game_started_game(self, mock_get_game):
+        # Configuración del mock para un juego con 4 jugadores
+        mock_game = MagicMock()
+        mock_game.players = ["player1", "player2", "player3"]
+        mock_game.started = True
+        mock_get_game.return_value = mock_game
+
+        data = JoinGame(player_name="player4",game_id=1)
+        instance = GameService(db=MagicMock())
+
+        # Verificar que se lanza la excepción
+        with pytest.raises(Exception) as context:
+            await instance.join_game(data)
+
+        assert str(context.value) == "Partida ya iniciada"

@@ -22,39 +22,47 @@ class GameService:
         self.db = db
 
     def get_all_games(self) -> List[GameOut]:
+        """ Obtiene todas las partidas """
         games = fetch_games(self.db)
         game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games if not g.started]
         return game_list
 
+
     def get_game(self, game_id: int) -> List[SingleGameOut]:
+        """ Obtiene una partida por su id """
         game = get_game(self.db, game_id)
         if game == None:
             raise Exception("Partida no encontrada")
         players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
         return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
 
+
     async def leave_game(self, player_id: int):
+        """ Elimina un jugador de una partida """
         player = get_player(self.db, player_id)
         if not player:
             raise Exception("Jugador no encontrado")
         
         game = get_game_by_player_id(self.db, player_id)
-        
+
         if player not in game.players:
             raise Exception("Player not in game")
         
         delete_player(self.db,player, game)
         self.db.commit()
 
-        json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
-        await manager.broadcast(json.dumps(json_ws1), game.id)
+        json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
+        await manager.broadcast(json.dumps(json_ws), game.id)
+        await manager.broadcast(json.dumps(json_ws), 0)
         
         if len(game.players) == 1:
             delete_all_game(self.db, game)
 
         return {"status": "OK", "message": "Player left the game"}
    
+
     async def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
+        """ Crea una partida """
         if not game_data.player_name:
             raise Exception("El jugador debe tener un nombre")
         elif not game_data.game_name:
@@ -63,14 +71,13 @@ class GameService:
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        try:
-            json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
-            await manager.broadcast(json.dumps(json_ws), 0)
-        except Exception as e:
-            print(e)
+        json_ws = {"event": "game.new", "payload": {"game_id": game.id, "name": game.name, "players": len(game.players)}}
+        await manager.broadcast(json.dumps(json_ws), 0)
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
-    
+   
+
     async def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
+        """ Un jugador se une a una partida """
         if not data.player_name:
             raise Exception("El jugador debe tener un nombre")
         
@@ -84,15 +91,15 @@ class GameService:
             raise Exception("Partida con máximo de jugadores permitidos")
         player = create_player(self.db, data.player_name, game)
 
-        json_ws1 = {"event": "join_game", "data": {"player_id": player.id, "player_name": player.username}}
-        json_ws2 = {"event": "new_player", "data": {"game_id": game.id}}
-        await manager.broadcast(json.dumps(json_ws1), game.id)
-        await manager.broadcast(json.dumps(json_ws2), 0)
+        json_ws = {"event": "player.new", "payload": {"game_id": game.id, "username": player.username}}
+        await manager.broadcast(json.dumps(json_ws), game.id)
+        await manager.broadcast(json.dumps(json_ws), 0)
 
         return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
     
 
     async def start_game(self, player_id: int) -> Dict:
+        """ Inicia una partida """
         player = get_player(self.db, player_id)
         if not player:
             raise Exception("Jugador no encontrado")
@@ -117,7 +124,6 @@ class GameService:
             player = players[i]
             put_asign_turn(self.db, player, i+1)
         
-
         # Crear el mazo de movimientos
         move_service = MoveService(self.db)
         move_service.create_movement_deck(game.id)
@@ -130,14 +136,15 @@ class GameService:
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
 
-        #--------------------------hace falta el id?
-        ws_json = {"event": "start_game", "data": {"game_id": game.id}}
+        ws_json = {"event": "game.start", "payload": {"game_id": game.id}}
         await manager.broadcast(json.dumps(ws_json), game.id)
         await manager.broadcast(json.dumps(ws_json), 0)
 
         return {"status": "OK", "message": "Game started"}
 
+
     async def change_turn(self, player_id: int):
+        """ Cambia el turno de un jugador """
         # Obtener el jugador
         player = get_player(self.db, player_id)
         if not player:
@@ -161,5 +168,5 @@ class GameService:
         else:
             raise Exception("No es turno del jugador")
         
-        json_ws = {"event": "change_turn", "data": {"turn": game.turn}}
+        json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)
