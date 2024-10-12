@@ -49,6 +49,9 @@ class MoveService:
         
         game = move.game
         player = get_player(self.db, id_player)
+
+        if not player:
+            raise Exception("Jugador no encontrado")
         if game.turn != player.turn:
             raise Exception("No es tu turno")
 
@@ -71,7 +74,6 @@ class MoveService:
         valid_moves = ValidMoves[str(move.type).replace("MovementType.", "")].value
 
         for dx, dy in valid_moves:
-            print(x1, y1, x2, y2, dx, dy)
             if x1 == y1 + dx and x2 == y2 + dy: return True
         
         return False
