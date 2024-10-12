@@ -18,13 +18,13 @@ class Game(Base):
     turn = Column(Integer, default=0)
     bloqued_color = Column(Integer, default=None)
     board = Column(String)
-    parcial_movements = Column(String)
     
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')
     host = relationship("Player", uselist=False, back_populates="host_game", foreign_keys='Player.host_game_id')
     movements = relationship("Movement", back_populates="game", cascade="all, delete-orphan")
     figures = relationship("Figure", cascade="all, delete-orphan")
+    partial_movements = relationship("PartialMovement", back_populates="game", cascade="all, delete-orphan")
 
     # Métodos para manejar la matriz del tablero
     @property
@@ -34,17 +34,6 @@ class Game(Base):
     @board_matrix.setter
     def board_matrix(self, matrix):
         self.board = json.dumps(matrix)
-
-    # Métodos para manejar la lista de movimientos parciales
-    @property
-    def parcial_movements_list(self):
-        return json.loads(self.parcial_movements)
-    
-    @parcial_movements_list.setter
-    def add_parcial_movement(self, Movement, x1, x2, y1, y2):
-        parcial_movements = json.loads(self.parcial_movements)
-        parcial_movements.append({ 'movement': Movement, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2 })
-        self.parcial_movements = json.dumps(parcial_movements)
 
 class Player(Base):
     __tablename__ = 'players'
@@ -61,6 +50,7 @@ class Player(Base):
     host_game = relationship("Game", back_populates="host", foreign_keys=[host_game_id])
     movements = relationship("Movement", back_populates="player", foreign_keys='Movement.player_id', lazy="dynamic")
     figures = relationship("Figure", back_populates="player", foreign_keys='Figure.player_id')
+    partial_movements = relationship("PartialMovement", back_populates="player", cascade="all, delete-orphan")
 
 
 class Movement(Base):
@@ -76,6 +66,7 @@ class Movement(Base):
     player = relationship("Player", back_populates="movements", foreign_keys=[player_id])
     game_id = Column(Integer, ForeignKey('games.id', ondelete="CASCADE"), nullable=False)
     game = relationship("Game", back_populates="movements", foreign_keys=[game_id])
+    partial_movements = relationship("PartialMovement", back_populates="movement", cascade="all, delete-orphan")
 
 
 class Figure(Base):
@@ -91,3 +82,20 @@ class Figure(Base):
     player = relationship("Player", foreign_keys=[player_id], back_populates="figures")
     game_id = Column(Integer, ForeignKey('games.id', ondelete="CASCADE"), nullable=False)
     game = relationship("Game", back_populates="figures")
+
+
+class PartialMovement(Base):
+    __tablename__ = 'partial_movements'
+
+    id = Column(Integer, primary_key=True)
+    game_id = Column(Integer, ForeignKey('games.id'))
+    player_id = Column(Integer, ForeignKey('players.id'))
+    movement_id = Column(Integer, ForeignKey('movements.id'))
+    x1 = Column(Integer)
+    x2 = Column(Integer)
+    y1 = Column(Integer)
+    y2 = Column(Integer)
+
+    game = relationship("Game", back_populates="partial_movements")
+    player = relationship("Player", back_populates="partial_movements")
+    movement = relationship("Movement", back_populates="partial_movements")

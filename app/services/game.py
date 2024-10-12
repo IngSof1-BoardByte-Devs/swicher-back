@@ -156,6 +156,8 @@ class GameService:
         # Verificar si el juego ha comenzado
         if not game.started:
             raise Exception("Partida no iniciada")
+        
+        # Verificar si es el turno del jugador
         if player.turn == game.turn:
             # Actualizar el turno del juego
             update_turn_game(self.db, game)
