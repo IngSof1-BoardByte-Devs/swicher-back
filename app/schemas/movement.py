@@ -10,7 +10,7 @@ class MovementRequest(BaseModel):
 class Movement(BaseModel):
     card_id: int
     id_player: int
-    type: int
+    type: str
 
 class MovementPartial(BaseModel):
     playerId: int
