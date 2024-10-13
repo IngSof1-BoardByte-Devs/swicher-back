@@ -8,7 +8,7 @@ class TestLeaveGame:
     def mock_get_player(self, player_id):
         player = None
         if player_id == 2 or player_id == 3:
-            player = MagicMock(id = player_id)
+            player = MagicMock(id = player_id, username = f"Player {player_id}")
             player.return_value = player_id
         return player
     
