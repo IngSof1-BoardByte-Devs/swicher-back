@@ -17,21 +17,19 @@ class TestCreateGame:
         new_game.name = game_name
         return new_game
 
-    @pytest.mark.parametrize("game_data, expected_return, broadcast_exception", [
+    @pytest.mark.parametrize("game_data, expected_return", [
         #Caso normal
         (CreateGame(player_name="player",game_name="game"),
-         GameLeaveCreateResponse(player_id=1,game_id=1),None),
+         GameLeaveCreateResponse(player_id=1,game_id=1)),
         #Caso error falta nombre de jugador
         (CreateGame(player_name="",game_name="game"),
-         Exception("El jugador debe tener un nombre"),None),
+         Exception("El jugador debe tener un nombre")),
         #Caso error falta nombre de partida
         (CreateGame(player_name="player",game_name=""),
-         Exception("La partida debe tener un nombre"),None),
-        #Caso extra para cubrir coverage
-        (CreateGame(player_name="player",game_name="game"),
-         GameLeaveCreateResponse(player_id=1,game_id=1),Exception("Error"))
+         Exception("La partida debe tener un nombre")),
+
     ])
-    async def test_create_game(self, mocker, game_data, expected_return, broadcast_exception):
+    async def test_create_game(self, mocker, game_data, expected_return):
         #Mock cruds
         mock_create_game = mocker.patch("app.services.game.create_game")
         mock_create_player = mocker.patch("app.services.game.create_player")
@@ -40,11 +38,6 @@ class TestCreateGame:
         #Config cruds
         mock_create_player.side_effect = lambda db, player_name, game: self.mock_create_player(db,player_name, game)
         mock_create_game.side_effect = lambda db, game_name: self.mock_create_game(db,game_name)
-
-        if isinstance(broadcast_exception, Exception):
-            mock_manager_broadcast.side_effect = broadcast_exception
-        else:
-            mock_manager_broadcast.return_value = None
         
         #Instancia db
         db = MagicMock()

@@ -25,7 +25,7 @@ class TestBoardValues:
         #Mock elementos de base de datos
         mock_games = [MagicMock(id=1,started=True),
                       MagicMock(id=2,started=False,board_matrix=None)]
-        mock_games[0].board_matrix = [[1] * 6 for _ in range(6)]
+        mock_games[0].board_matrix = [1]*36
 
         #Config cruds
         mock_get_game.side_effect = lambda db, game_id: self.mock_get_game(game_id,mock_games)
