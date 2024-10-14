@@ -43,3 +43,6 @@ class StartGame(BaseModel):
 class GameLeaveCreateResponse(BaseModel):
     player_id: int
     game_id: int
+
+class RevertRequest(BaseModel):
+    player_id: int
