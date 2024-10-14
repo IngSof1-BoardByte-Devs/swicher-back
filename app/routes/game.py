@@ -5,7 +5,7 @@ petición en un endpoint específico.
 """
 
 from app.schemas.board import BoardOut
-from app.schemas.movement import MovementOut, MovementRequest
+from app.schemas.movement import Movement, MovementOut, MovementPartial, MovementRequest
 from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import *
@@ -142,5 +142,29 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "Jugador no encontrado":
             raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.patch("/movement-cards/{card_id}", response_model=Movement, tags=["In Game"])
+async def use_movement_card(card_id: int, movement_request: MovementPartial, db: Session = Depends(get_db)):
+    print("estoy adentro de la funcion")  # Agrega esta línea
+
+    move_service = MoveService(db)
+    try:
+        move = move_service.set_parcial_movement(movement_request.playerId, 
+                                                 card_id, movement_request.index1 // 6, 
+                                                 movement_request.index1 % 6, 
+                                                 movement_request.index2 // 6, 
+                                                 movement_request.index2 % 6)
+        
+        return move 
+    except Exception as e:
+        logging.error(f"Error updating movement card: {str(e)}")
+        if str(e) == "La carta de movimiento no existe":
+            raise HTTPException(status_code=404, detail=str(e))
+        elif str(e) == "La carta no te pertenece":
+            raise HTTPException(status_code=401, detail=str(e))
+        elif str(e) == "La carta no es válida para ese movimiento":
+            raise HTTPException(status_code=401, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
