@@ -144,3 +144,18 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.patch("/{game_id}/revert-moves", tags=["In Game"])
+async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
+    service = GameService(db)
+
+    try:
+        return service.revert_moves(game_id, revert_request.player_id)
+    
+    except Exception as e:
+        if "Partida no encontrada" in str(e):
+            raise HTTPException(status_code=404, detail=str(e))
+        elif "Jugador no encontrado" in str(e) or "No es tu turno" in str(e):
+            raise HTTPException(status_code=401, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
