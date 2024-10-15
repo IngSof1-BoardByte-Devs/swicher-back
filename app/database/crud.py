@@ -8,7 +8,6 @@ from typing import List
 from sqlalchemy.orm import Session
 from app.database.models import *
 from app.utils.enums import *
-import enum
 
 def get_game(db: Session, game_id: int) -> Game:
     return db.query(Game).filter(Game.id == game_id).first()
@@ -48,6 +47,8 @@ def delete_all_game(db: Session, game: Game):
         db.delete(figure)
     for player in game.players:
         db.delete(player)
+    for partial_mov in game.partial_movements:
+        db.delete(partial_mov)
     db.delete(game)
     db.commit()
 
@@ -118,8 +119,13 @@ def get_game_by_player_id(db: Session, player_id: int) -> Game:
     player = get_player(db, player_id)
     return player.game
 
-
-# Manejo de Movimientos
+def swap_board(db: Session, game: Game, x1: int, x2 : int, y1: int, y2: int):
+    index1 = (x1-1) + (y1-1) * 6
+    index2 = (x2-1) + (y2-1) * 6
+    temp = game.board_matrix[index1]
+    game.board_matrix[index1] = game.board_matrix[index2]
+    game.board_matrix[index2] = temp
+    db.commit()
 
 def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int, x2: int, y1: int, y2: int):
     game.parcial_movements_list = (movement, x1, x2, y1, y2)
@@ -134,9 +140,13 @@ def get_game_by_move_id(db: Session, movement_id: int) -> Game:
 def get_movement(db: Session, movement_id: int) -> Movement:
     return db.query(Movement).get(movement_id)
 
-def clear_parcial_movements(db: Session, game: Game):
-    game.parcial_movements = []
+def delete_partial_movements(db: Session, game: Game, player: Player):
+    for _ in range(len(game.partial_movements)):
+        mov = game.partial_movements[0].movement
+        mov.player = player
+        mov.status = MovementStatus.INHAND
+        db.delete(game.partial_movements[0])
     db.commit()
 
 def parcial_movements_exist(game: Game) -> bool:
-    return len(game.parcial_movements) != 0
+    return len(game.partial_movements) != 0
