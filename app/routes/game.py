@@ -55,7 +55,7 @@ async def get_games(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal server error")
     
 
-@router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
+@router.post("/", response_model=PlayerAndGame, tags=["Home"])
 async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     Crea una nueva partida.

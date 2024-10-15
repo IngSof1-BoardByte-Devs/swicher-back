@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 from app.main import app
-from app.schemas.game import GameLeaveCreateResponse, JoinGame
+from app.schemas.game import PlayerAndGame, JoinGame
 
 
 class TestGetMovements:
@@ -9,7 +9,7 @@ class TestGetMovements:
     @pytest.mark.parametrize("game_data, service_return, expected_status, expected_response", [
         #Caso normal
         (JoinGame(game_id=1,player_name="test"),
-         GameLeaveCreateResponse(player_id=2, game_id=1),
+         PlayerAndGame(player_id=2, game_id=1),
          200, {"player_id": 2, "game_id": 1}),
         #Caso con error al enviar nombre vacio
         (JoinGame(game_id=1,player_name=""),

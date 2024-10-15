@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Response
 from app.schemas.player import PlayerName
-from app.schemas.game import JoinGame, GameLeaveCreateResponse
+from app.schemas.game import JoinGame, PlayerAndGame
 from app.services.player import PlayerService
 from app.services.game import GameService
 from app.database.session import get_db
@@ -11,7 +11,7 @@ import logging
 
 router = APIRouter()
 
-@router.post("/", response_model=GameLeaveCreateResponse, tags=["Home"])
+@router.post("/", response_model=PlayerAndGame, tags=["Home"])
 async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     Permite a un jugador unirse a una partida.
