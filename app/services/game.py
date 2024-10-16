@@ -16,6 +16,8 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import random
+import json
+
 
 class GameService:
     def __init__(self, db: Session):
@@ -38,27 +40,57 @@ class GameService:
 
 
     async def leave_game(self, player_id: int):
-        """ Elimina un jugador de una partida """
+        """ Elimina un jugador de una partida o elimina toda la partida si el host decide abandonar antes de iniciar """
+        
+        # Obtener el jugador por su ID
         player = get_player(self.db, player_id)
         if not player:
             raise Exception("Jugador no encontrado")
         
+        # Obtener la partida en la que está el jugador
         game = get_game_by_player_id(self.db, player_id)
+        if not game:
+            raise Exception("Partida no encontrada")
 
-        if player not in game.players:
-            raise Exception("Player not in game")
+        # Verificar si la partida no ha comenzado
+        if not game.started:
+            # Si el jugador es el host
+            if game.host == player:
+                # Si el host decide abandonar y hay más de 1 jugador en la partida
+                if len(game.players) > 1:
+                    # Eliminar a todos los jugadores excepto al host
+                    for p in list(game.players):
+                        if p != player:
+                            delete_player(self.db, p, game)
+                    
+                    # Eliminar al host y borrar la partida
+                    delete_player(self.db, player, game)
+                    delete_all_game(self.db, game)
+                else:
+                    # Si el host es el último jugador, eliminar directamente la partida
+                    delete_player(self.db, player, game)
+                    delete_all_game(self.db, game)
+            else:
+                # Si el jugador NO es el host, solo lo eliminamos de la partida
+                delete_player(self.db, player, game)
+            
+            # Enviar un evento de que el jugador ha abandonado la partida
+            json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
+            await manager.broadcast(json.dumps(json_ws), game.id)
+            await manager.broadcast(json.dumps(json_ws), 0)
+
+        else:
+            # Si la partida ya ha comenzado, el jugador simplemente abandona la partida
+            delete_player(self.db, player, game)
+
+            json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
+            await manager.broadcast(json.dumps(json_ws), game.id)
         
-        delete_player(self.db,player, game)
+        # Cometer la transacción final
         self.db.commit()
 
-        json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
-        await manager.broadcast(json.dumps(json_ws), game.id)
-        await manager.broadcast(json.dumps(json_ws), 0)
-        
-        if len(game.players) == 1:
-            delete_all_game(self.db, game)
-
         return {"status": "OK", "message": "Player left the game"}
+
    
 
     async def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
