@@ -10,17 +10,16 @@ import logging
 router = APIRouter()
 
 
-@router.patch("/{card_id}", response_model=Movement, tags=["In Game"])
+@router.patch("/{card_id}/", response_model=Movement, tags=["In Game"])
 async def use_movement_card(card_id: int, movement_request: MovementPartial, db: Session = Depends(get_db)):
-    print("estoy adentro de la funcion")  # Agrega esta línea
 
     move_service = MoveService(db)
     try:
-        move = move_service.set_parcial_movement(movement_request.playerId, 
-                                                 card_id, movement_request.index1 // 6, 
-                                                 movement_request.index1 % 6, 
-                                                 movement_request.index2 // 6, 
-                                                 movement_request.index2 % 6)
+        x1 = movement_request.index1 // 6
+        x2 = movement_request.index1 % 6
+        y1 = movement_request.index2 // 6
+        y2 = movement_request.index2 % 6
+        move = move_service.set_parcial_movement(movement_request.playerId, card_id, x1, x2, y1, y2)
         
         return move 
     except Exception as e:
