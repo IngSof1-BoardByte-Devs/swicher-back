@@ -6,7 +6,7 @@ from app.services.movement import MoveService
 from app.utils.enums import MovementStatus
 
 
-class TestDeleteMovement:
+class TestRevertMoves:
     def board_default(self):
         return [i + 1 for i in range(36)]
     
@@ -35,7 +35,7 @@ class TestDeleteMovement:
 
             #Movimientos parciales
             if game_id not in [4,5]:
-                game.partial_movements = [MagicMock(id = 1, x1=2, x2=4, y1=1, y2=3)]
+                game.partial_movements = [MagicMock(id = 1, x1=0, x2=1, y1=2, y2=3)]
                 db.movs.append(MagicMock(id = 1, player = None,
                                         status = MovementStatus.DISCARDED))
                 game.partial_movements[0].movement = db.movs[0]
@@ -44,7 +44,7 @@ class TestDeleteMovement:
                 game.board_matrix[15] = 2
 
                 if game_id in [2,3]:
-                    game.partial_movements.append(MagicMock(id = 2,x1=2,x2=3,y1=4,y2=6))
+                    game.partial_movements.append(MagicMock(id = 2,x1=3,x2=1,y1=5,y2=2))
                     db.movs.append(MagicMock(id = 2, player = None,
                                             status = MovementStatus.DISCARDED))
                     game.partial_movements[1].movement = db.movs[1]
@@ -53,7 +53,7 @@ class TestDeleteMovement:
                     game.board_matrix[32] = 20
 
                     if game_id == 3:
-                        game.partial_movements.append(MagicMock(id = 3,x1=3,x2=6,y1=6,y2=6))
+                        game.partial_movements.append(MagicMock(id = 3,x1=5,x2=2,y1=5,y2=5))
                         db.movs.append(MagicMock(id = 3, player = None,
                                                 status = MovementStatus.DISCARDED))
                         game.partial_movements[2].movement = db.movs[2]
@@ -90,7 +90,7 @@ class TestDeleteMovement:
         #Caso error jugador de otro turno
         (PlayerAndGame(player_id=10,game_id=1), Exception("No tienes autorización para revertir estos cambios")),
     ])
-    def test_delete_movement(self, mocker, data, expected_return):
+    def test_revert_moves(self, mocker, data, expected_return):
 
         #Mock cruds
         mock_get_game = mocker.patch("app.services.movement.get_game")
@@ -114,10 +114,10 @@ class TestDeleteMovement:
         instance = MoveService(db)
         if isinstance(expected_return, Exception):
             with pytest.raises(Exception, match=str(expected_return)):
-                instance.delete_movement(data)
+                instance.revert_moves(data)
             
         else:
-            instance.delete_movement(data)
+            instance.revert_moves(data)
 
             #Verificaciones
             assert db.game.board_matrix == self.board_default()

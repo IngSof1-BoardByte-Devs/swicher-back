@@ -81,7 +81,7 @@ class MoveService:
         return False
     
     
-    def delete_movement(self, data: PlayerAndGame):
+    def revert_moves(self, data: PlayerAndGame):
         game = get_game(self.db, data.game_id)
         if not game:
             raise Exception("Partida no encontrada")
