@@ -150,12 +150,13 @@ async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session 
     service = GameService(db)
 
     try:
-        return service.revert_moves(game_id, revert_request.player_id)
+        await service.revert_moves(game_id, revert_request.player_id)
+        return { "message" : "Turn reverted successfully" }
     
     except Exception as e:
-        if "Partida no encontrada" in str(e):
+        if "No hay cambios para revertir" in str(e):
             raise HTTPException(status_code=404, detail=str(e))
-        elif "Jugador no encontrado" in str(e) or "No es tu turno" in str(e):
+        elif "No tienes autorización para revertir estos cambios" in str(e):
             raise HTTPException(status_code=401, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
