@@ -52,8 +52,6 @@ class TestPatchMove:
         # Cliente
         client = TestClient(app)
         
-        response_expected = {"status": "OK", "message": "Game started"}
-
 
         mock_move_service = mocker.patch("app.routes.movement_card.MoveService.set_parcial_movement")
 
@@ -63,8 +61,7 @@ class TestPatchMove:
         else:
             mock_move_service.return_value = service_return
 
-
-        response = client.patch(f"/movement_card/{card_id}", json=movement_request.model_dump())
+        response = client.patch(f"/movement-cards/{card_id}/", json=movement_request.model_dump())
 
         assert response.status_code == expected_status
         assert response.json() == expected_response
