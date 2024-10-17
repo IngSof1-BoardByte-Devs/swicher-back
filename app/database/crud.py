@@ -120,22 +120,19 @@ def get_game_by_player_id(db: Session, player_id: int) -> Game:
     return player.game
 
 def swap_board(db: Session, game: Game, x1: int, x2 : int, y1: int, y2: int):
-    index1 = (x1-1) + (y1-1) * 6
-    index2 = (x2-1) + (y2-1) * 6
-    temp = game.board_matrix[index1]
-    game.board_matrix[index1] = game.board_matrix[index2]
-    game.board_matrix[index2] = temp
-    db.commit()
+    index1 = x1 * 6 + x2
+    index2 = y1 * 6 + y2
+    matrix = game.board_matrix
+    temp = matrix[index1]
+    matrix[index1] = matrix[index2]
+    matrix[index2] = temp
+    update_board(db, game, matrix)
 
 def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int, x2: int, y1: int, y2: int):
     game.parcial_movements_list = (movement, x1, x2, y1, y2)
     movement.status = MovementStatus.DISCARDED
     movement.player = None
     db.commit()
-
-def get_game_by_move_id(db: Session, movement_id: int) -> Game:
-    movement = db.query
-    return movement.game
 
 def get_movement(db: Session, movement_id: int) -> Movement:
     return db.query(Movement).get(movement_id)
