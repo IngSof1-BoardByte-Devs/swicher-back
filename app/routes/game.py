@@ -5,7 +5,7 @@ petición en un endpoint específico.
 """
 
 from app.schemas.board import BoardOut
-from app.schemas.movement import MovementOut, MovementRequest
+from app.schemas.movement import Movement, MovementOut, MovementPartial, MovementRequest
 from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import *
@@ -142,5 +142,21 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "Jugador no encontrado":
             raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.patch("/{game_id}/revert-moves", tags=["In Game"])
+async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
+    service = GameService(db)
+
+    try:
+        await service.revert_moves(game_id, revert_request.player_id)
+        return { "message" : "Turn reverted successfully" }
+    
+    except Exception as e:
+        if "No hay cambios para revertir" in str(e):
+            raise HTTPException(status_code=404, detail=str(e))
+        elif "No tienes autorización para revertir estos cambios" in str(e):
+            raise HTTPException(status_code=401, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")

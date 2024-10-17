@@ -35,3 +35,6 @@ class JoinGame(BaseModel):
 class PlayerAndGame(BaseModel):
     player_id: int
     game_id: int
+
+class RevertRequest(BaseModel):
+    player_id: int

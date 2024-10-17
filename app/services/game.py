@@ -170,3 +170,6 @@ class GameService:
         
         json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)
+
+    def revert_moves(self, game_id: int, player_id: int) -> dict:
+        pass
