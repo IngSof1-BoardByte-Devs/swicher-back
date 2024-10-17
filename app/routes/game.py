@@ -5,7 +5,7 @@ petición en un endpoint específico.
 """
 
 from app.schemas.board import BoardOut
-from app.schemas.movement import MovementOut, MovementRequest
+from app.schemas.movement import Movement, MovementOut, MovementPartial, MovementRequest
 from app.services.board import BoardService
 from fastapi import APIRouter, Depends, Response
 from app.schemas.game import *
