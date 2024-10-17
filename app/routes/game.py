@@ -144,4 +144,19 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
-        
+
+@router.patch("/{game_id}/revert-moves", tags=["In Game"])
+async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
+    service = GameService(db)
+
+    try:
+        await service.revert_moves(game_id, revert_request.player_id)
+        return { "message" : "Turn reverted successfully" }
+    
+    except Exception as e:
+        if "No hay cambios para revertir" in str(e):
+            raise HTTPException(status_code=404, detail=str(e))
+        elif "No tienes autorización para revertir estos cambios" in str(e):
+            raise HTTPException(status_code=401, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
