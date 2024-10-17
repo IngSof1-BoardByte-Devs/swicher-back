@@ -24,10 +24,6 @@ class CreateGame(BaseModel):
     player_name: str
     game_name: str
 
-class LeaveStartGame(BaseModel):
-    player_id: int
-    game_id: int
-
 class GameCreateResponse(BaseModel):
     status: str
     game_id: int
@@ -36,11 +32,7 @@ class JoinGame(BaseModel):
     game_id: int
     player_name: str
 
-class StartGame(BaseModel):
-    player_id: int
-    game_id: int
-      
-class GameLeaveCreateResponse(BaseModel):
+class PlayerAndGame(BaseModel):
     player_id: int
     game_id: int
 

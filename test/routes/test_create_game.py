@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 import pytest
 from app.main import app
-from app.schemas.game import CreateGame, GameLeaveCreateResponse
+from app.schemas.game import CreateGame, PlayerAndGame
 
 
 class TestGetMovements:
@@ -25,7 +25,7 @@ class TestGetMovements:
         client = TestClient(app)
 
         #Respuesta de base de datos
-        game = GameLeaveCreateResponse(player_id=1,game_id=1)
+        game = PlayerAndGame(player_id=1,game_id=1)
         
         #Simula la función de create_game
         mock_create_game = mocker.patch("app.services.game.GameService.create_game")

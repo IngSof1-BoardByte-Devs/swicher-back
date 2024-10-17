@@ -50,7 +50,6 @@ class Player(Base):
     host_game = relationship("Game", back_populates="host", foreign_keys=[host_game_id])
     movements = relationship("Movement", back_populates="player", foreign_keys='Movement.player_id', lazy="dynamic")
     figures = relationship("Figure", back_populates="player", foreign_keys='Figure.player_id')
-    partial_movements = relationship("PartialMovement", back_populates="player", cascade="all, delete-orphan")
 
 
 class Movement(Base):
@@ -89,7 +88,6 @@ class PartialMovement(Base):
 
     id = Column(Integer, primary_key=True)
     game_id = Column(Integer, ForeignKey('games.id'))
-    player_id = Column(Integer, ForeignKey('players.id'))
     movement_id = Column(Integer, ForeignKey('movements.id'))
     x1 = Column(Integer)
     x2 = Column(Integer)
@@ -97,5 +95,4 @@ class PartialMovement(Base):
     y2 = Column(Integer)
 
     game = relationship("Game", back_populates="partial_movements")
-    player = relationship("Player", back_populates="partial_movements")
     movement = relationship("Movement", back_populates="partial_movements")

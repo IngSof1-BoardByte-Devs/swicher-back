@@ -1,4 +1,5 @@
 from app.database.crud import *
+from app.schemas.game import PlayerAndGame
 from app.schemas.movement import *
 from typing import Dict, List
 from sqlalchemy.orm import Session
@@ -62,6 +63,7 @@ class MoveService:
             raise Exception("La carta no es válida para ese movimiento")
 
         update_parcial_movement(self.db, game, move, x1, x2, y1, y2)
+        swap_board(self.db, game, x1, x2, y1, y2)
 
         return Movement(card_id = move.id, id_player = id_player, type = move.type)
         
@@ -77,3 +79,26 @@ class MoveService:
             if x1 == y1 + dx and x2 == y2 + dy: return True
         
         return False
+    
+    
+    def revert_moves(self, data: PlayerAndGame):
+        game = get_game(self.db, data.game_id)
+        if not game:
+            raise Exception("Partida no encontrada")
+        if not game.started:
+            raise Exception("Partida no iniciada")
+        if not parcial_movements_exist(game):
+            raise Exception("No hay cambios para revertir")
+        
+        player = get_player(self.db, data.player_id)
+        if not player:
+            raise Exception("Jugador no encontrado")
+        if player not in game.players:
+            raise Exception("El jugador no pertenece a esta partida")
+        if player.turn != game.turn:
+            raise Exception("No tienes autorización para revertir estos cambios")
+        
+        for mov in reversed(game.partial_movements):
+            swap_board(self.db, game, mov.x1, mov.x2, mov.y1, mov.y2)
+        
+        delete_partial_movements(self.db, game, player)

@@ -45,7 +45,7 @@ class TestRevertMoves:
                     if isinstance(service_return, Exception):
                         raise service_return
                     return None
-        mocker.patch("app.routes.game.GameService.revert_moves", side_effect=mock_revert_moves)
+        mocker.patch("app.routes.game.MoveService.revert_moves", side_effect=mock_revert_moves)
         
         response = client.patch(f"games/{game_id}/revert-moves", json=revert_request.model_dump())
         assert response.status_code == expected_status
