@@ -134,6 +134,7 @@ def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int
     movement.status = MovementStatus.DISCARDED
     player = movement.player
     player.movements.remove(movement)
+    movement.player = None
     db.commit()
 
 def get_movement(db: Session, movement_id: int) -> Movement:
