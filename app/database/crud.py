@@ -129,9 +129,11 @@ def swap_board(db: Session, game: Game, x1: int, x2 : int, y1: int, y2: int):
     update_board(db, game, matrix)
 
 def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int, x2: int, y1: int, y2: int):
-    game.parcial_movements_list = (movement, x1, x2, y1, y2)
+    new_parcial_movements = PartialMovement(game_id=game.id, movement_id=movement.id, x1=x1, x2=x2, y1=y1, y2=y2)
+    game.partial_movements.append(new_parcial_movements)
     movement.status = MovementStatus.DISCARDED
-    movement.player = None
+    player = movement.player
+    player.movements.remove(movement)
     db.commit()
 
 def get_movement(db: Session, movement_id: int) -> Movement:
