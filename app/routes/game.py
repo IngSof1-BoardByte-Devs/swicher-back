@@ -147,10 +147,10 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
 
 @router.patch("/{game_id}/revert-moves", tags=["In Game"])
 async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
-    service = GameService(db)
+    service = MoveService(db)
 
     try:
-        await service.revert_moves(game_id, revert_request.player_id)
+        await service.revert_moves(PlayerAndGame(player_id=revert_request.player_id,game_id=game_id))
         return { "message" : "Turn reverted successfully" }
     
     except Exception as e:
