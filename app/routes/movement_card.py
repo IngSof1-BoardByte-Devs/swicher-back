@@ -15,11 +15,8 @@ async def use_movement_card(card_id: int, movement_request: MovementPartial, db:
 
     move_service = MoveService(db)
     try:
-        x1 = movement_request.index1 // 6
-        x2 = movement_request.index1 % 6
-        y1 = movement_request.index2 // 6
-        y2 = movement_request.index2 % 6
-        move = move_service.set_parcial_movement(movement_request.playerId, card_id, x1, x2, y1, y2)
+        move = await move_service.set_parcial_movement(movement_request.playerId, card_id,
+                                                 movement_request.index1,movement_request.index2)
         
         return move 
     except Exception as e:
