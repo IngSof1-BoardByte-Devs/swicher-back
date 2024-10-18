@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 import pytest
 
-from app.schemas.game import CreateGame, GameLeaveCreateResponse
+from app.schemas.game import CreateGame, PlayerAndGame
 from app.services.game import GameService
 
 @pytest.mark.asyncio
@@ -20,7 +20,7 @@ class TestCreateGame:
     @pytest.mark.parametrize("game_data, expected_return", [
         #Caso normal
         (CreateGame(player_name="player",game_name="game"),
-         GameLeaveCreateResponse(player_id=1,game_id=1)),
+         PlayerAndGame(player_id=1,game_id=1)),
         #Caso error falta nombre de jugador
         (CreateGame(player_name="",game_name="game"),
          Exception("El jugador debe tener un nombre")),

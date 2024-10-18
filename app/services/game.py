@@ -93,7 +93,7 @@ class GameService:
 
    
 
-    async def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
+    async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
         """ Crea una partida """
         if not game_data.player_name:
             raise Exception("El jugador debe tener un nombre")
@@ -105,10 +105,10 @@ class GameService:
         self.db.commit()
         json_ws = {"event": "game.new", "payload": {"game_id": game.id, "name": game.name, "players": len(game.players)}}
         await manager.broadcast(json.dumps(json_ws), 0)
-        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
+        return PlayerAndGame(player_id=player.id, game_id=game.id)
    
 
-    async def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
+    async def join_game(self, data: JoinGame) -> PlayerAndGame:
         """ Un jugador se une a una partida """
         if not data.player_name:
             raise Exception("El jugador debe tener un nombre")
@@ -127,7 +127,7 @@ class GameService:
         await manager.broadcast(json.dumps(json_ws), game.id)
         await manager.broadcast(json.dumps(json_ws), 0)
 
-        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
+        return PlayerAndGame(player_id=player.id, game_id=game.id)
     
 
     async def start_game(self, player_id: int) -> Dict:
