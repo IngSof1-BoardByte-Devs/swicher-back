@@ -28,7 +28,7 @@ class BoardService:
         update_board(self.db, game, matrix)
         
 
-    def get_board_values(self, id_game: int) -> List[Color]:
+    async def get_board_values(self, id_game: int) -> List[Color]:
         game = get_game(self.db, id_game)
         if not game:
             raise Exception("Partida no encontrada")
@@ -39,7 +39,7 @@ class BoardService:
         for i in range(36):
             board_values.append(Color(color=matrix[i]))
         
-        self.get_figures_from_board(game.id)
+        await self.get_figures_from_board(game.id)
 
         return BoardOut(board=board_values)
     
@@ -123,7 +123,7 @@ class BoardService:
                     figure += '0'
         return figure
     
-    def get_figures_from_board(self, id_game: int) -> List[FigureInBoard]:
+    async def get_figures_from_board(self, id_game: int) -> List[FigureInBoard]:
         '''
             Función principal que obtiene las figuras de un tablero
         '''
@@ -131,9 +131,15 @@ class BoardService:
         board = game.board_matrix
         figures = self.get_valid_figures(board)
         figures = self.normalize_figures(figures)
+        
+        all_figures = []  # Lista para almacenar todas las figuras y sus índices
+
         for figure, indices in figures:
             figure_int = self.array_to_int(figure)
             figure_name = fig_values.get(int(figure_int), "Unknown")
             print(f"Figura: {figure_name}, Índices originales: {indices}")
+            all_figures.append({"type": figure_name, "indexes": indices})  # Añadir figura y sus índices a la lista
 
-        json_ws = {"event": "game.figures", "payload": {"type": figure_name, "indexes": indices}}
+        json_ws = {"event": "game.figures", "payload": all_figures}  # Incluir todas las figuras en el payload
+        print(json_ws)
+        await manager.broadcast(json.dumps(json_ws), game.id)
