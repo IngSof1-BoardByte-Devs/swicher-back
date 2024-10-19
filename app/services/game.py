@@ -49,47 +49,34 @@ class GameService:
         
         # Obtener la partida en la que está el jugador
         game = get_game_by_player_id(self.db, player_id)
-        if not game:
-            raise Exception("Partida no encontrada")
 
-        # Verificar si la partida no ha comenzado
+        # Divide en si la partida no ha comenzado
+        json_ws = {}
+        game_id = game.id
+        username = player.username
         if not game.started:
             # Si el jugador es el host
             if game.host == player:
-                # Si el host decide abandonar y hay más de 1 jugador en la partida
-                if len(game.players) > 1:
-                    # Eliminar a todos los jugadores excepto al host
-                    for p in list(game.players):
-                        if p != player:
-                            delete_player(self.db, p, game)
-                    
-                    # Eliminar al host y borrar la partida
-                    delete_player(self.db, player, game)
-                    delete_all_game(self.db, game)
-                else:
-                    # Si el host es el último jugador, eliminar directamente la partida
-                    delete_player(self.db, player, game)
-                    delete_all_game(self.db, game)
+                delete_all_game(self.db,game)
+                json_ws = {"event": "game.cancelled", "payload": {"game_id": game_id}}
             else:
-                # Si el jugador NO es el host, solo lo eliminamos de la partida
-                delete_player(self.db, player, game)
+                # Si el jugador NO es el host
+                delete_player_lobby(self.db, player, game)
+                json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
             
-            # Enviar un evento de que el jugador ha abandonado la partida
-            json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
-            await manager.broadcast(json.dumps(json_ws), game.id)
+            # Enviar evento websocket
+            await manager.broadcast(json.dumps(json_ws), game_id)
             await manager.broadcast(json.dumps(json_ws), 0)
 
         else:
-            # Si la partida ya ha comenzado, el jugador simplemente abandona la partida
-            delete_player(self.db, player, game)
+            # Si la partida ya ha comenzado
+            if len(game.players) > 2:
+                delete_player_game(self.db, player, game)
+            else:
+                delete_all_game(self.db,game)
 
-            json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
-            await manager.broadcast(json.dumps(json_ws), game.id)
-        
-        # Cometer la transacción final
-        self.db.commit()
-
-        return {"status": "OK", "message": "Player left the game"}
+            json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
+            await manager.broadcast(json.dumps(json_ws), game_id)
 
    
 
