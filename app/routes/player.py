@@ -40,7 +40,8 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return await service.leave_game(id_player)
+        await service.leave_game(id_player)
+        return {"status": "OK", "message": "Player left the game"}
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
         if str(e) == "Jugador no encontrado":
