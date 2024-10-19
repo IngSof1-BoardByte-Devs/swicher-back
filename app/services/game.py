@@ -71,6 +71,10 @@ class GameService:
         else:
             # Si la partida ya ha comenzado
             if len(game.players) > 2:
+                # Avisa que se pasa turno si es justo el del jugador
+                if player.turn == game.turn:
+                    json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
+                    await manager.broadcast(json.dumps(json_ws), game.id)
                 delete_player_game(self.db, player, game)
             else:
                 delete_all_game(self.db,game)
