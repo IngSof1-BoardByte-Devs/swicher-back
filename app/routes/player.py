@@ -34,7 +34,6 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
 @router.delete("/{id_player}", tags=["In Game"])
 async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
-    Ningun jugador puede abandonar una partida no empezada
     Args:
         id_player (int): ID del jugador.
     """
