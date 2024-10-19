@@ -16,6 +16,8 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import random
+import json
+
 
 class GameService:
     def __init__(self, db: Session):
@@ -38,27 +40,48 @@ class GameService:
 
 
     async def leave_game(self, player_id: int):
-        """ Elimina un jugador de una partida """
+        """ Elimina un jugador de una partida o elimina toda la partida si el host decide abandonar antes de iniciar """
+        
+        # Obtener el jugador por su ID
         player = get_player(self.db, player_id)
         if not player:
             raise Exception("Jugador no encontrado")
         
+        # Obtener la partida en la que está el jugador
         game = get_game_by_player_id(self.db, player_id)
 
-        if player not in game.players:
-            raise Exception("Player not in game")
-        
-        delete_player(self.db,player, game)
-        self.db.commit()
+        # Divide en si la partida no ha comenzado
+        json_ws = {}
+        game_id = game.id
+        username = player.username
+        if not game.started:
+            # Si el jugador es el host
+            if game.host == player:
+                delete_all_game(self.db,game)
+                json_ws = {"event": "game.cancelled", "payload": {"game_id": game_id}}
+            else:
+                # Si el jugador NO es el host
+                delete_player_lobby(self.db, player, game)
+                json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
+            
+            # Enviar evento websocket
+            await manager.broadcast(json.dumps(json_ws), game_id)
+            await manager.broadcast(json.dumps(json_ws), 0)
 
-        json_ws = {"event": "player.left", "payload": {"game_id": game.id, "username": player.username}}
-        await manager.broadcast(json.dumps(json_ws), game.id)
-        await manager.broadcast(json.dumps(json_ws), 0)
-        
-        if len(game.players) == 1:
-            delete_all_game(self.db, game)
+        else:
+            # Si la partida ya ha comenzado
+            if len(game.players) > 2:
+                # Avisa que se pasa turno si es justo el del jugador
+                if player.turn == game.turn:
+                    json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
+                    await manager.broadcast(json.dumps(json_ws), game.id)
+                delete_player_game(self.db, player, game)
+            else:
+                delete_all_game(self.db,game)
 
-        return {"status": "OK", "message": "Player left the game"}
+            json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
+            await manager.broadcast(json.dumps(json_ws), game_id)
+
    
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
