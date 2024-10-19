@@ -32,13 +32,10 @@ def put_host(db: Session, game: Game, player: Player):
     game.host = player
     db.commit()
 
-def delete_player(db: Session, player: Player, game: Game):
-    if not game.started:
-        raise Exception("Cannot leave game that has started")
-    else:
-        game.players.remove(player)
-        db.delete(player)
-        db.commit()
+def delete_player_lobby(db: Session, player: Player, game: Game):
+    game.players.remove(player)
+    db.delete(player)
+    db.commit()
 
 def delete_all_game(db: Session, game: Game):
     for movement in game.movements:
@@ -51,12 +48,6 @@ def delete_all_game(db: Session, game: Game):
         db.delete(partial_mov)
     db.delete(game)
     db.commit()
-
-def get_player_by_id(db: Session, player_id: int):
-    return db.query(Player).filter(Player.id == player_id).first()
-
-def get_game_by_id(db: Session, game_id: int):
-    return db.query(Game).filter(Game.id == game_id).first()
 
 def create_movement(db: Session, game: Game, type: Enum):
     new_movement = Movement(type=type, game=game)
@@ -150,3 +141,27 @@ def delete_partial_movements(db: Session, game: Game, player: Player):
 
 def parcial_movements_exist(game: Game) -> bool:
     return len(game.partial_movements) != 0
+
+def delete_player_game(db: Session, player: Player, game: Game):
+    #Pasa turno
+    if player.turn == game.turn:
+        update_turn_game(db,game)
+    #Descartar cartas de movimiento
+    for mov_card in player.movements:
+        mov_card.status = MovementStatus.DISCARDED
+        mov_card.player = None
+    #Eliminar cartas de figura
+    for fig_card in player.figures: db.delete(fig_card)
+    #Actualizar turnos de los jugadores
+    for p in game.players:
+        if p.turn > player.turn:
+            p.turn -= 1
+    #Actualizo turno del juego si es necesario
+    if game.turn > player.turn: game.turn -=  1
+    #Pongo en None el host si es el host quien se va
+    if game.host == player: game.host = None
+
+    #Subo los cambios
+    db.commit()
+    #Elimino el jugador
+    delete_player_lobby(db, player, game)
