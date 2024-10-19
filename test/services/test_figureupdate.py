@@ -12,6 +12,7 @@ class TestUpdateFigureServiceStatus:
         (2, 101, True, 101, False, None, FigureStatus.DISCARDED, Exception("La carta de figura no existe"), None),
         (3, 102, False, 102, True, 102, FigureStatus.DISCARDED, Exception("La partida no ha comenzado"), None),
         (4, 103, True, 104, True, 103, FigureStatus.BLOCKED, Exception("No es tu turno"), None),
+        (5, 105, True, 105, True, 106, FigureStatus.INHAND, Exception("La carta no te pertenece"), None),
     ])
     def test_update_figure_service_status(self, mocker, figure_id, player_id, game_started, turn, figure_exists, figure_player_id, new_status, expected_exception, expected_response):
         # Mock get_figure_by_id function
@@ -48,7 +49,7 @@ class TestUpdateFigureServiceStatus:
         # Verify that get_figure_by_id was called
         mock_get_figure_by_id.assert_called_once_with(instance.db, figure_id)
 
-        if figure_exists and game_started and turn == player_id:
+        if figure_exists and game_started and turn == player_id and figure_player_id == player_id:
             # Verify that update_figure_status was called with the correct parameters
             mock_update_figure_status.assert_called_once_with(instance.db, mock_figure, new_status)
 
