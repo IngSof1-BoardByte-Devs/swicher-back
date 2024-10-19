@@ -7,6 +7,7 @@ sesiones controladas de la base de datos.
 from typing import List
 from sqlalchemy.orm import Session
 from app.database.models import *
+from app.schemas.figure import FigUpdate
 from app.utils.enums import *
 
 def get_game(db: Session, game_id: int) -> Game:
@@ -150,3 +151,50 @@ def delete_partial_movements(db: Session, game: Game, player: Player):
 
 def parcial_movements_exist(game: Game) -> bool:
     return len(game.partial_movements) != 0
+
+####
+
+def get_figure_by_id(db: Session, figure_id: int) -> Figure:
+    return db.query(Figure).filter(Figure.id == figure_id).first()
+
+def update_figure_status(db: Session, figure: Figure, status: FigureStatus):
+    figure.status = status
+    db.commit()
+    return figure
+
+def remove_figure_from_player(db: Session, figure: Figure):
+    figure.player = None
+    db.commit()
+
+def delete_partial_movements(db: Session, game: Game):
+    for partial_movement in game.partial_movements:
+        db.delete(partial_movement)
+    db.commit()
+
+# Función para actualizar el estado de la figura en la base de datos
+def update_figure_status(db: Session, figure: Figure, new_status: FigureStatus):
+    figure.status = new_status
+    db.commit()
+    db.refresh(figure)  # Asegura que obtienes la última versión de los datos
+    return figure
+
+# Función para desvincular al jugador de la figura
+def remove_player_from_figure(db: Session, figure: Figure):
+    figure.player = None
+    db.commit()
+    db.refresh(figure)  # Asegura que la figura refleje la desvinculación
+    return figure
+
+# Función para generar la respuesta para el frontend
+def prepare_figure_update_response(self, figure: Figure, current_player_id: int) -> FigUpdate:
+    """
+    Genera una respuesta personalizada para el frontend.
+    Aquí decides qué devolver dependiendo del estado de la figura.
+    """
+    return FigUpdate(
+        id=figure.id,
+        id_player=current_player_id,  # Se devuelve el ID del jugador antes de la desvinculación
+        type=figure.type,
+        discarded=figure.discarded,
+        blocked=figure.blocked
+    )
