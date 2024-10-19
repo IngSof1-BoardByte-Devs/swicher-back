@@ -162,29 +162,23 @@ def delete_partial_movements(db: Session, game: Game):
         db.delete(partial_movement)
     db.commit()
 
-# Función para actualizar el estado de la figura en la base de datos
 def update_figure_status(db: Session, figure: Figure, new_status: FigureStatus):
     figure.status = new_status
     db.commit()
-    db.refresh(figure)  # Asegura que obtienes la última versión de los datos
+    db.refresh(figure)  
     return figure
 
-# Función para desvincular al jugador de la figura
 def remove_player_from_figure(db: Session, figure: Figure):
     figure.player = None
     db.commit()
-    db.refresh(figure)  # Asegura que la figura refleje la desvinculación
+    db.refresh(figure)  
     return figure
 
-# Función para generar la respuesta para el frontend
 def prepare_figure_update_response(self, figure: Figure, current_player_id: int) -> FigUpdate:
-    """
-    Genera una respuesta personalizada para el frontend.
-    Aquí decides qué devolver dependiendo del estado de la figura.
-    """
+
     return FigUpdate(
         id=figure.id,
-        id_player=current_player_id,  # Se devuelve el ID del jugador antes de la desvinculación
+        id_player=current_player_id, 
         type=figure.type,
         discarded=figure.discarded,
         blocked=figure.blocked
