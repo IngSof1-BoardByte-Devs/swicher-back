@@ -189,10 +189,10 @@ class GameService:
             #Cancela movimientos parciales si existen
             if parcial_movements_exist(game):
                 move_service = MoveService(self.db)
-                move_service.revert_moves(PlayerAndGame(player_id=player_id,game_id=game.id))
+                await move_service.revert_moves(PlayerAndGame(player_id=player_id,game_id=game.id))
 
             #Restablece cartas de movimientos si le faltan
-            len_cards = len(player.movements)
+            len_cards = len(get_moves_hand(self.db,player))
             if len_cards < 3:
                 deck = get_moves_deck(self.db,game)
                 #Si necesita mas de las que hay en el deck se reinicia el deck
