@@ -42,7 +42,7 @@ class TestLeaveGame:
          json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player1"}})),
         #Caso game quede un solo jugador
         (5,True,2,None,None,
-         json.dumps({"event": "player.left", "payload": {"game_id": 2, "username": "player5"}})),
+         json.dumps({"event": "game.winner", "payload": {"player_id": 6}})),
         #Caso que no encuentra al jugador
         (7,None,None,None,Exception("Jugador no encontrado"),None),
     ])
