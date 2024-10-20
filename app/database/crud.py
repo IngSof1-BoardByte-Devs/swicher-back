@@ -33,13 +33,10 @@ def put_host(db: Session, game: Game, player: Player):
     game.host = player
     db.commit()
 
-def delete_player(db: Session, player: Player, game: Game):
-    if not game.started:
-        raise Exception("Cannot leave game that has started")
-    else:
-        game.players.remove(player)
-        db.delete(player)
-        db.commit()
+def delete_player_lobby(db: Session, player: Player, game: Game):
+    game.players.remove(player)
+    db.delete(player)
+    db.commit()
 
 def delete_all_game(db: Session, game: Game):
     for movement in game.movements:
@@ -52,12 +49,6 @@ def delete_all_game(db: Session, game: Game):
         db.delete(partial_mov)
     db.delete(game)
     db.commit()
-
-def get_player_by_id(db: Session, player_id: int):
-    return db.query(Player).filter(Player.id == player_id).first()
-
-def get_game_by_id(db: Session, game_id: int):
-    return db.query(Game).filter(Game.id == game_id).first()
 
 def create_movement(db: Session, game: Game, type: Enum):
     new_movement = Movement(type=type, game=game)
@@ -151,6 +142,8 @@ def delete_partial_movements(db: Session, game: Game, player: Player):
 
 def parcial_movements_exist(game: Game) -> bool:
     return len(game.partial_movements) != 0
+  
+####
 
 def get_figure_by_id(db: Session, figure_id: int) -> Figure:
     return db.query(Figure).filter(Figure.id == figure_id).first()
