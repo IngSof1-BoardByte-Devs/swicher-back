@@ -133,11 +133,14 @@ def get_movement(db: Session, movement_id: int) -> Movement:
     return db.query(Movement).get(movement_id)
 
 def delete_partial_movements(db: Session, game: Game, player: Player):
-    for _ in range(len(game.partial_movements)):
-        mov = game.partial_movements[0].movement
+    cant = len(game.partial_movements)
+    for _ in range(cant):
+        partial = game.partial_movements[0]
+        mov = partial.movement
         mov.player = player
         mov.status = MovementStatus.INHAND
-        db.delete(game.partial_movements[0])
+        game.partial_movements.remove(partial)
+        db.delete(partial)
     db.commit()
 
 def parcial_movements_exist(game: Game) -> bool:
@@ -209,6 +212,13 @@ def get_moves_deck(db,game):
     ).all()
     return movements_in_deck
 
+def get_moves_hand(db,player):
+    moves_in_deck = db.query(Movement).filter(
+        Movement.player == player,
+        Movement.status == MovementStatus.INHAND
+    ).all()
+    return moves_in_deck
+
 def reset_moves_deck(db,game):
     db.query(Movement).filter(
         Movement.game == game, 
@@ -217,11 +227,11 @@ def reset_moves_deck(db,game):
     db.commit()
 
 def get_figures_hand(db,player):
-    figures_in_deck = db.query(Figure).filter(
+    figures_in_hand = db.query(Figure).filter(
         Figure.player == player,
         Figure.status == FigureStatus.INHAND
     ).all()
-    return figures_in_deck
+    return figures_in_hand
 
 def get_figures_deck(db,player):
     figures_in_deck = db.query(Figure).filter(

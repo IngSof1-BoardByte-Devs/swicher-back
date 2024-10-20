@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, Depends, Response
 from app.schemas.player import PlayerName
 from app.schemas.game import JoinGame, PlayerAndGame
@@ -60,6 +61,7 @@ async def end_turn(id_player: int, db: Session = Depends(get_db)):
     
     except Exception as e:
         logging.error(f"Error end turn: {str(e)}")
+        logging.error("Traceback: %s", traceback.format_exc())
         if str(e) == "Partida no iniciada":
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "No es turno del jugador":
