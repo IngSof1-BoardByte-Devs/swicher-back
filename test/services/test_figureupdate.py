@@ -6,15 +6,18 @@ from app.utils.enums import FigureStatus, FigureType
 
 class TestUpdateFigureServiceStatus:
 
-    @pytest.mark.parametrize("figure_id, player_id, game_started, turn, figure_exists, figure_player_id, figure_status, expected_exception, expected_response", [
-        (1, 100, True, 100, True, 100, FigureStatus.INHAND, None, 
+    @pytest.mark.parametrize("figure_id, player_id, game_started, turn, figure_exists, figure_player_id, figure_status, remaining_figures, expected_exception, expected_response", [
+        (1, 100, True, 100, True, 100, FigureStatus.INHAND, [Mock()], None, 
          FigUpdate(id=1, id_player=100, type=FigureType.TYPE1, discarded=False, blocked=False)),
-        (2, 101, True, 101, False, None, FigureStatus.DISCARDED, Exception("La carta de figura no existe"), None),
-        (3, 102, False, 102, True, 102, FigureStatus.DISCARDED, Exception("La partida no ha comenzado"), None),
-        (4, 103, True, 104, True, 103, FigureStatus.BLOCKED, Exception("No es tu turno"), None),
-        (5, 105, True, 105, True, 106, FigureStatus.INHAND, Exception("La carta no te pertenece"), None),
+        (2, 101, True, 101, False, None, FigureStatus.DISCARDED, [], Exception("La carta de figura no existe"), None),
+        (3, 102, False, 102, True, 102, FigureStatus.DISCARDED, [], Exception("La partida no ha comenzado"), None),
+        (4, 103, True, 104, True, 103, FigureStatus.BLOCKED, [], Exception("No es tu turno"), None),
+        (5, 105, True, 105, True, 106, FigureStatus.INHAND, [], Exception("La carta no te pertenece"), None),
+        # Nuevo caso donde el jugador no tiene cartas de figura y se eliminan todos los jugadores excepto el ganador
+        (6, 106, True, 106, True, 106, FigureStatus.INHAND, [], None, 
+         FigUpdate(id=6, id_player=106, type=FigureType.TYPE1, discarded=False, blocked=False)),
     ])
-    def test_update_figure_service_status(self, mocker, figure_id, player_id, game_started, turn, figure_exists, figure_player_id, figure_status, expected_exception, expected_response):
+    def test_update_figure_service_status(self, mocker, figure_id, player_id, game_started, turn, figure_exists, figure_player_id, figure_status, remaining_figures, expected_exception, expected_response):
         # Mock get_figure_by_id function
         mock_get_figure_by_id = mocker.patch("app.services.figures.get_figure_by_id")
         
@@ -27,13 +30,18 @@ class TestUpdateFigureServiceStatus:
         
         # Mock update_figure_status function
         mock_update_figure_status = mocker.patch("app.services.figures.update_figure_status")
-        
         if figure_exists:
             mock_update_figure_status.return_value = mock_figure
 
         # Mock delete_partial_movements and remove_player_from_figure functions
         mock_delete_partial_movements = mocker.patch("app.services.figures.delete_partial_movements")
         mock_remove_player_from_figure = mocker.patch("app.services.figures.remove_player_from_figure")
+
+        # Mock get_figures_hand to return the remaining figures
+        mock_get_figures_hand = mocker.patch("app.services.figures.get_figures_hand", return_value=remaining_figures)
+
+        # Mock remove_all_players_except_winner
+        mock_remove_all_players_except_winner = mocker.patch("app.services.figures.remove_all_players_except_winner")
 
         # Create FigureService instance
         instance = FigureService(db=MagicMock())
@@ -59,6 +67,10 @@ class TestUpdateFigureServiceStatus:
                 # Verify that delete_partial_movements and remove_player_from_figure were called
                 mock_delete_partial_movements.assert_called_once_with(instance.db, mock_figure.game)
                 mock_remove_player_from_figure.assert_called_once_with(instance.db, mock_figure)
+
+            # If no remaining figures, verify that the player is the last one and others are removed
+            if len(remaining_figures) == 0:
+                mock_remove_all_players_except_winner.assert_called_once_with(mock_figure.game, player_id)
 
             # Verify that prepare_figure_update_response was called with the correct parameters
             instance.prepare_figure_update_response.assert_called_once_with(mock_update_figure_status.return_value, figure_player_id)
