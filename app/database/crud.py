@@ -175,3 +175,29 @@ def prepare_figure_update_response(self, figure: Figure, current_player_id: int)
     )
 
     return figu
+  
+###
+
+def delete_player_game(db: Session, player: Player, game: Game):
+    #Pasa turno
+    if player.turn == game.turn:
+        update_turn_game(db,game)
+    #Descartar cartas de movimiento
+    for mov_card in player.movements:
+        mov_card.status = MovementStatus.DISCARDED
+        mov_card.player = None
+    #Eliminar cartas de figura
+    for fig_card in player.figures: db.delete(fig_card)
+    #Actualizar turnos de los jugadores
+    for p in game.players:
+        if p.turn > player.turn:
+            p.turn -= 1
+    #Actualizo turno del juego si es necesario
+    if game.turn > player.turn: game.turn -=  1
+    #Pongo en None el host si es el host quien se va
+    if game.host == player: game.host = None
+
+    #Subo los cambios
+    db.commit()
+    #Elimino el jugador
+    delete_player_lobby(db, player, game)
