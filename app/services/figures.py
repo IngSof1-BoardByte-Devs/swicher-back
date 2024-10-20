@@ -74,39 +74,29 @@ class FigureService:
 
         return figures
     
-    def update_figure_service_status(self, figure_id: int, player_id: int, new_status: FigureStatus) -> FigUpdate:
-        # Obtenemos la figura por su ID
+    def update_figure_service_status(self, figure_id: int, player_id: int) -> FigUpdate:
         figure = get_figure_by_id(self.db, figure_id)
         if not figure:
             raise Exception("La carta de figura no existe")
-
-        # Verificamos si la carta pertenece al jugador
         if figure.player is None or figure.player.id != player_id:
             raise Exception("La carta no te pertenece")
 
-        # Verificamos si la partida ha comenzado
         game = figure.game
         if not game.started:
             raise Exception("La partida no ha comenzado")
         
-        # Verificamos que sea el turno del jugador
         if game.turn != player_id:
             raise Exception("No es tu turno")
         
-        # Capturamos el ID del jugador antes de modificar la carta
         current_player_id = figure.player.id
-        
-        # Actualizamos el estado de la figura en la base de datos
-        updated_figure = update_figure_status(self.db, figure, new_status)
-        # Si la figura fue descartada, eliminamos los movimientos parciales asociados
-        
-        if new_status == FigureStatus.DISCARDED:
 
-            # Eliminamos los movimientos parciales asociados a la partida
+        updated_figure = update_figure_status(self.db, figure)
+        
+        if figure.status == FigureStatus.DISCARDED:
             delete_partial_movements(self.db, game)
-            
-            # Desvinculamos al jugador de la figura en la base de datos
             remove_player_from_figure(self.db, figure)
-    
-        return self.prepare_figure_update_response(updated_figure, current_player_id)
+        
+        updatefig= self.prepare_figure_update_response(updated_figure, current_player_id)
+
+        return updatefig
 
