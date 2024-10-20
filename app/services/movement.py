@@ -70,7 +70,7 @@ class MoveService:
         update_parcial_movement(self.db, game, move, x1, x2, y1, y2)
         swap_board(self.db, game, x1, x2, y1, y2)
 
-        json_ws = {"event": "movement.card.used", "payload": {"card_id": move.id,"position1": index1,"position2": index2,"type":move.type}}
+        json_ws = {"event": "movement.card.used", "payload": {"card_id": move.id,"position1": index1,"position2": index2,"type":move.type.value}}
         await manager.broadcast(json.dumps(json_ws), game.id)
 
         return Movement(card_id = move.id, id_player = id_player, type = move.type)
