@@ -1,6 +1,7 @@
 from app.database.crud import *
 from app.schemas.figure import FigUpdate, FigureOut
 from app.schemas.game import *
+from app.core.websocket import manager
 
 from typing import Dict, List
 from sqlalchemy.orm import Session
@@ -74,7 +75,7 @@ class FigureService:
 
         return figures
     
-    def update_figure_service_status(self, figure_id: int, player_id: int) -> FigUpdate:
+    async def update_figure_service_status(self, figure_id: int, player_id: int) -> FigUpdate:
         figure = get_figure_by_id(self.db, figure_id)
         if not figure:
             raise Exception("La carta de figura no existe")
@@ -82,15 +83,11 @@ class FigureService:
             raise Exception("La carta no te pertenece")
 
         game = figure.game
-        if not game.started:
-            raise Exception("La partida no ha comenzado")
         
         if game.turn != player_id:
             raise Exception("No es tu turno")
-        
-        current_player_id = figure.player.id
 
-        updated_figure = update_figure_status(self.db, figure)
+        updated_figure = update_figure_status(self.db, figure, FigureStatus.DISCARDED)
         
         if figure.status == FigureStatus.DISCARDED:
             delete_partial_movements(self.db, game)
@@ -100,10 +97,9 @@ class FigureService:
         remaining_figures = get_figures_hand(self.db, figure.player)
         if len(remaining_figures) == 0:
             # Si no quedan más cartas en la mano, el jugador gana
-            winner_id = player_id 
-            remove_all_players_except_winner(game, winner_id)
+            delete_all_game(self.db, game)
         
-        updatefig= self.prepare_figure_update_response(updated_figure, current_player_id)
+        updatefig= self.prepare_figure_update_response(updated_figure, figure.player.id)
 
         return updatefig
 
