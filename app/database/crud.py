@@ -201,3 +201,53 @@ def delete_player_game(db: Session, player: Player, game: Game):
     db.commit()
     #Elimino el jugador
     delete_player_lobby(db, player, game)
+
+def get_moves_deck(db,game):
+    movements_in_deck = db.query(Movement).filter(
+        Movement.game == game,
+        Movement.status == MovementStatus.INDECK
+    ).all()
+    return movements_in_deck
+
+def reset_moves_deck(db,game):
+    db.query(Movement).filter(
+        Movement.game == game, 
+        Movement.status == MovementStatus.DISCARDED
+    ).update({"status": MovementStatus.INDECK})
+    db.commit()
+
+def get_figures_hand(db,player):
+    figures_in_deck = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INHAND
+    ).all()
+    return figures_in_deck
+
+def get_figures_deck(db,player):
+    figures_in_deck = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INDECK
+    ).all()
+    return figures_in_deck
+
+def remove_all_players_except_winner(db: Session, game: Game, winner_id: int):
+    """
+    Elimina a todos los jugadores de la partida excepto al ganador, y elimina todas
+    sus cartas de figura y movimiento asociadas.
+    """
+    players = game.players  # Obtiene todos los jugadores de la partida
+    for player in players:
+        if player.id != winner_id:
+            # Descarta cartas de movimiento y desasocia al jugador
+            for mov_card in player.movements:
+                mov_card.status = MovementStatus.DISCARDED
+                mov_card.player = None
+            
+            # Elimina cartas de figura que tenga el jugador
+            for fig_card in player.figures:
+                db.delete(fig_card)
+            
+            # Elimina al jugador de la partida
+            game.players.remove(player)
+    
+    db.commit()  # Guardar los cambios en la base de datos

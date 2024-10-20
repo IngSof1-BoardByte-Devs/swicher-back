@@ -96,6 +96,13 @@ class FigureService:
             delete_partial_movements(self.db, game)
             remove_player_from_figure(self.db, figure)
         
+        # Verificar si el jugador ha descartado todas sus cartas de figura
+        remaining_figures = get_figures_hand(self.db, figure.player)
+        if len(remaining_figures) == 0:
+            # Si no quedan más cartas en la mano, el jugador gana
+            winner_id = player_id 
+            remove_all_players_except_winner(game, winner_id)
+        
         updatefig= self.prepare_figure_update_response(updated_figure, current_player_id)
 
         return updatefig
