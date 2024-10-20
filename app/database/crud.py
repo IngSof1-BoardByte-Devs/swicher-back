@@ -165,3 +165,31 @@ def delete_player_game(db: Session, player: Player, game: Game):
     db.commit()
     #Elimino el jugador
     delete_player_lobby(db, player, game)
+
+def get_moves_deck(db,game):
+    movements_in_deck = db.query(Movement).filter(
+        Movement.game == game,
+        Movement.status == MovementStatus.INDECK
+    ).all()
+    return movements_in_deck
+
+def reset_moves_deck(db,game):
+    db.query(Movement).filter(
+        Movement.game == game, 
+        Movement.status == MovementStatus.DISCARDED
+    ).update({"status": MovementStatus.INDECK})
+    db.commit()
+
+def get_figures_hand(db,player):
+    figures_in_deck = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INHAND
+    ).all()
+    return figures_in_deck
+
+def get_figures_deck(db,player):
+    figures_in_deck = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INDECK
+    ).all()
+    return figures_in_deck

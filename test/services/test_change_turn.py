@@ -4,6 +4,7 @@ import pytest
 from app.services.game import GameService
 from app.database.crud import update_turn_game
 
+"""Verifica solo los turnos, no controla las cartas"""
 
 @pytest.mark.asyncio
 class TestChangeTurn:
@@ -20,7 +21,7 @@ class TestChangeTurn:
     def mock_get_player(self,db, player_id):
         player = None
         if player_id in range(1,12):
-            player = MagicMock(id = player_id)
+            player = MagicMock(id = player_id, movements = [1,2,3])
             player.turn = self.turn(player_id) if player_id != 11 else 2
         return player
     
@@ -52,11 +53,15 @@ class TestChangeTurn:
         mock_get_player = mocker.patch("app.services.game.get_player")
         mock_get_game_by_player_id = mocker.patch("app.services.game.get_game_by_player_id")
         mock_manager_broadcast = mocker.patch("app.services.game.manager.broadcast")
+        mock_parcial_movements_exist = mocker.patch("app.services.game.parcial_movements_exist")
+        mock_get_figures_hand = mocker.patch("app.services.game.get_figures_hand")
         
 
         #Config cruds
         mock_get_player.side_effect = lambda db, player_id: self.mock_get_player(db,player_id)
         mock_get_game_by_player_id.side_effect = lambda db, player_id: self.mock_get_game_by_player_id(db,player_id)
+        mock_parcial_movements_exist.return_value = False
+        mock_get_figures_hand.return_value = [1,2,3]
         
         #Instancia db
         db = MagicMock()

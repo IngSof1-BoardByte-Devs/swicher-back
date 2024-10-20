@@ -182,12 +182,41 @@ class GameService:
         
         # Verificar si es el turno del jugador
         if player.turn == game.turn:
+            #Cancela movimientos parciales si existen
+            if parcial_movements_exist(game):
+                move_service = MoveService(self.db)
+                move_service.revert_moves(PlayerAndGame(player_id=player_id,game_id=game.id))
+
+            #Restablece cartas de movimientos si le faltan
+            len_cards = len(player.movements)
+            if len_cards < 3:
+                deck = get_moves_deck(self.db,game)
+                #Si necesita mas de las que hay en el deck se reinicia el deck
+                if (3-len_cards) > len(deck):
+                    reset_moves_deck(self.db,game)
+                    deck = get_moves_deck(self.db,game)
+                #Asigno cartas de movimiento
+                for _ in range(3-len_cards):
+                    move = random.choice(deck)
+                    deck.remove(move)
+                    put_asign_movement(self.db, move, player)
+
+            #Restablece cartas de figura si le faltan
+            len_cards = len(get_figures_hand(self.db,player))
+            if len_cards < 3:
+                #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
+                deck = get_figures_deck(self.db,player)
+                if (3-len_cards) > len(deck):
+                    for figure in deck: put_status_figure(self.db, figure, FigureStatus.INHAND)
+                else:
+                    for _ in range(3-len_cards):
+                        figure = random.choice(deck)
+                        deck.remove(figure)
+                        put_status_figure(self.db, figure, FigureStatus.INHAND)
+
             # Actualizar el turno del juego
             update_turn_game(self.db, game)
             
-            # Verificar si el turno es válido
-            if game.turn > len(game.players) or game.turn <= 0:
-                raise Exception("Error: Invalid turn")
         else:
             raise Exception("No es turno del jugador")
         
