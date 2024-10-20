@@ -69,10 +69,6 @@ class TestRevertMoves:
 
         db.game = game
         return game
-    
-    def mock_delete(self, db, partial_mov):
-        db.game.partial_movements.remove(partial_mov)
-    
 
     @pytest.mark.parametrize("data, expected_return, websocket_return", [
         #Caso normal un movimiento a revertir
@@ -131,7 +127,6 @@ class TestRevertMoves:
         ws = MagicMock()
         ws.context = None
         
-        db.delete.side_effect = lambda partial_mov: self.mock_delete(db,partial_mov)
         mock_manager_broadcast.side_effect = lambda json_sw, _: self.mock_websocket(ws,json_sw)
         
         instance = MoveService(db)
