@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class FigureOut(BaseModel):
     player_id: int
@@ -11,3 +12,7 @@ class FigUpdate(BaseModel):
     type: str  # Tipo de figura (Type 1, Type 2, ..., Type 25)
     discarded: bool
     blocked: bool
+
+class FigureInBoard(BaseModel):
+    type_figure: str
+    indexes: List[int]
