@@ -13,8 +13,19 @@ router = APIRouter()
 async def recognize_figure(card_id: int, player_id: int, db: Session = Depends(get_db)):
     try:
         figureService = FigureService(db)
-        response = await figureService.update_figure_service_status(card_id, player_id)
+        response = await figureService.update_figure_status(card_id, player_id)
         return response
     except Exception as e:
-        logging.error(f"Error moving card: {e}")
-        raise HTTPException(status_code=500, detail="Error moving card")
+        logging.error(f"Error recognize_figure: {e}")
+        if str(e) == "La carta de figura no existe":
+            raise HTTPException(status_code=404, detail=str(e))
+        elif str(e) == "La carta/jugador no pertenece a este juego":
+            raise HTTPException(status_code=401, detail=str(e))
+        elif str(e) == "La carta debe estar en la mano":
+            raise HTTPException(status_code=400, detail=str(e))
+        elif str(e) == "No es tu turno":
+            raise HTTPException(status_code=403, detail=str(e))
+        elif str(e) == "Función de bloquear figura no implementada":
+            raise HTTPException(status_code=501, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
