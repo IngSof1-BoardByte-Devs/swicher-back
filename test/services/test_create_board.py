@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 import pytest
 
-from app.database.crud import update_board
 from app.services.board import BoardService
 
 

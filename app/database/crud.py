@@ -7,6 +7,7 @@ sesiones controladas de la base de datos.
 from typing import List
 from sqlalchemy.orm import Session
 from app.database.models import *
+from app.schemas.figure import FigUpdate
 from app.utils.enums import *
 
 def get_game(db: Session, game_id: int) -> Game:
@@ -144,6 +145,15 @@ def delete_partial_movements(db: Session, game: Game, player: Player):
 
 def parcial_movements_exist(game: Game) -> bool:
     return len(game.partial_movements) != 0
+  
+
+def get_figure(db: Session, figure_id: int) -> Figure:
+    return db.query(Figure).filter(Figure.id == figure_id).first()
+
+def delete_figure(db: Session, figure: Figure):
+    figure.player.figures.remove(figure)
+    db.delete(figure)
+    db.commit()
 
 def delete_player_game(db: Session, player: Player, game: Game):
     #Pasa turno
