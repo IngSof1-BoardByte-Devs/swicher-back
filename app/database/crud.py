@@ -69,6 +69,7 @@ def put_start_game(db: Session, game: Game):
 
 def put_asign_movement(db: Session, movement: Movement, player: Player):
     movement.player = player
+    player.movements.append(movement)
     movement.status = MovementStatus.INHAND
     db.commit()
 

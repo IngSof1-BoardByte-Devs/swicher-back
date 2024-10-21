@@ -86,9 +86,6 @@ class GameService:
                 await manager.broadcast(json.dumps(json_ws), game_id)
             
 
-
-   
-
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
         """ Crea una partida """
         if not game_data.player_name:

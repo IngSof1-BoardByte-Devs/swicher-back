@@ -42,6 +42,8 @@ class MoveService:
             if not game.started:
                 raise Exception("Partida no iniciada")
 
+            for mov in player.movements:
+                print(f"Carta del jugador {player.username}: id={mov.id} y estado={mov.status.value}")
             return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]
     
     async def set_parcial_movement(self, id_player, id_move: int, index1:int, index2:int) -> Movement:
