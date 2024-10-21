@@ -115,7 +115,7 @@ class MoveService:
             moves.append({"card_id": mov.movement_id,"position1": index1,"position2": index2})
             swap_board(self.db, game, mov.x1, mov.x2, mov.y1, mov.y2)
         
-        delete_partial_movements(self.db, game, player)
+        revert_partial_movements(self.db, game, player)
 
         json_ws = {"event": "moves.cancelled", "payload": moves}
         await manager.broadcast(json.dumps(json_ws), game.id)

@@ -133,13 +133,21 @@ def update_parcial_movement(db: Session, game: Game, movement: Movement, x1: int
 def get_movement(db: Session, movement_id: int) -> Movement:
     return db.query(Movement).get(movement_id)
 
-def delete_partial_movements(db: Session, game: Game, player: Player):
+def revert_partial_movements(db: Session, game: Game, player: Player):
     cant = len(game.partial_movements)
     for _ in range(cant):
         partial = game.partial_movements[0]
         mov = partial.movement
         mov.player = player
         mov.status = MovementStatus.INHAND
+        game.partial_movements.remove(partial)
+        db.delete(partial)
+    db.commit()
+
+def delete_partial_movements(db: Session, game: Game, player: Player):
+    cant = len(game.partial_movements)
+    for _ in range(cant):
+        partial = game.partial_movements[0]
         game.partial_movements.remove(partial)
         db.delete(partial)
     db.commit()
