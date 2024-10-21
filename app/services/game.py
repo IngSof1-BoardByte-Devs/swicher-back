@@ -6,6 +6,7 @@ funciones que realizan operaciones más complejas y que no están directamente r
 
 from app.database.models import Game, Player
 from app.database.crud import *
+from app.schemas.figure import FigureOut
 from app.schemas.game import *
 from app.schemas.player import *
 from app.services.movement import MoveService
@@ -208,15 +209,22 @@ class GameService:
             #Restablece cartas de figura si le faltan
             len_cards = len(get_figures_hand(self.db,player))
             if len_cards < 3:
+                figures = []
                 #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
                 deck = get_figures_deck(self.db,player)
                 if (3-len_cards) > len(deck):
-                    for figure in deck: put_status_figure(self.db, figure, FigureStatus.INHAND)
+                    for figure in deck: 
+                        put_status_figure(self.db, figure, FigureStatus.INHAND)
+                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
                 else:
                     for _ in range(3-len_cards):
                         figure = random.choice(deck)
                         deck.remove(figure)
                         put_status_figure(self.db, figure, FigureStatus.INHAND)
+                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                        
+                json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
+                await manager.broadcast(json.dumps(json_ws), game.id)
 
             # Actualizar el turno del juego
             update_turn_game(self.db, game)

@@ -4,7 +4,7 @@ import pytest
 from app.schemas.board import BoardOut, Color
 from app.services.board import BoardService
 
-
+@pytest.mark.asyncio
 class TestBoardValues:
     def mock_get_game(self,game_id,mock_games):
         return next((g for g in mock_games if g.id == game_id), None)
@@ -17,10 +17,11 @@ class TestBoardValues:
         #Caso con error partida no iniciada
         (2, Exception("Partida no iniciada")),
     ])
-    def test_get_board_values(self, mocker, game_id, expected_return):
+    async def test_get_board_values(self, mocker, game_id, expected_return):
 
         #Mock cruds
         mock_get_game = mocker.patch("app.services.board.get_game")
+        mocker.patch("app.services.board.BoardService.get_figures_from_board")
 
         #Mock elementos de base de datos
         mock_games = [MagicMock(id=1,started=True),
@@ -36,9 +37,9 @@ class TestBoardValues:
         instance = BoardService(db)
         if isinstance(expected_return, Exception):
             with pytest.raises(Exception, match=str(expected_return)):
-                instance.get_board_values(game_id)
+                await instance.get_board_values(game_id)
         else:
-            result = instance.get_board_values(game_id)
+            result = await instance.get_board_values(game_id)
             assert result == expected_return
 
         #Verificaciones
