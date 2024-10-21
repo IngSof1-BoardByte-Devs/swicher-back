@@ -34,9 +34,8 @@ class TestLeaveGame:
         #Caso game ultimo jugador sin ser su turno
         (4,True,3,3,None,
          json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player4"}})),
-        #Caso game ultimo jugador siendo su turno
-        (4,True,4,1,None,
-         json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player4"}})),
+        #Caso error ultimo jugador en su turnp
+        (4,True,4,None,Exception("No puede abandonar el jugador de turno"),None),
         #Caso game siendo primer jugador sin ser turno
         (1,True,2,1,None,
          json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player1"}})),

@@ -14,6 +14,9 @@ class TestGetMovements:
         ),
         #Caso con error de jugador no encontrado
         (2, Exception("Jugador no encontrado"), 404, {"detail": "Jugador no encontrado"}),
+        #Caso con error abandona jugador de turno
+        (3, Exception("No puede abandonar el jugador de turno"), 
+         400, {"detail": "No puede abandonar el jugador de turno"}),
         #Caso excepcional
         (1, Exception("Internal server error"), 500, {"detail": "Internal server error"})
     ])

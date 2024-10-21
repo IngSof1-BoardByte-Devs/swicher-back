@@ -156,9 +156,6 @@ def delete_figure(db: Session, figure: Figure):
     db.commit()
 
 def delete_player_game(db: Session, player: Player, game: Game):
-    #Pasa turno
-    if player.turn == game.turn:
-        update_turn_game(db,game)
     #Descartar cartas de movimiento
     for mov_card in player.movements:
         mov_card.status = MovementStatus.DISCARDED

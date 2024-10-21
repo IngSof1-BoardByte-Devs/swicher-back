@@ -46,6 +46,8 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
         logging.error(f"Error leaving game: {str(e)}")
         if str(e) == "Jugador no encontrado":
             raise HTTPException(status_code=404, detail=str(e))
+        if str(e) == "No puede abandonar el jugador de turno":
+            raise HTTPException(status_code=400, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
