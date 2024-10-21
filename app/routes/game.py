@@ -116,7 +116,8 @@ async def board(id_game : int, db: Session = Depends(get_db)):
     """
     service = BoardService(db)
     try:
-        return service.get_board_values(id_game)
+        response = await service.get_board_values(id_game)
+        return response
     except Exception as e:
         logging.error(f"Error get board: {str(e)}")
         if str(e) == "Partida no iniciada":
