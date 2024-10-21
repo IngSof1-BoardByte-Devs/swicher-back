@@ -147,7 +147,7 @@ def parcial_movements_exist(game: Game) -> bool:
     return len(game.partial_movements) != 0
   
 
-def get_figure_by_id(db: Session, figure_id: int) -> Figure:
+def get_figure(db: Session, figure_id: int) -> Figure:
     return db.query(Figure).filter(Figure.id == figure_id).first()
 
 def delete_partial_movements(db: Session, game: Game):
@@ -155,31 +155,10 @@ def delete_partial_movements(db: Session, game: Game):
         db.delete(partial_movement)
     db.commit()
 
-def update_figure_status(db: Session, figure: Figure, status: FigureStatus):
-    figure.status = status
-    if status == FigureStatus.DISCARDED:
-        figure.player = None
+def delete_figure(db: Session, figure: Figure):
+    figure.player.figures.remove(figure)
+    db.delete(figure)
     db.commit()
-
-def remove_player_from_figure(db: Session, figure: Figure):
-    figure.player = None
-    db.commit()
-    db.refresh(figure)  
-    return figure
-
-def prepare_figure_update_response(self, figure: Figure, current_player_id: int) -> FigUpdate:
-
-    figu = FigUpdate(
-            id=figure.id,
-            id_player=current_player_id,
-            type=figure.type,
-            discarded=figure.discarded,
-            blocked=figure.blocked
-    )
-
-    return figu
-  
-###
 
 def delete_player_game(db: Session, player: Player, game: Game):
     #Pasa turno
