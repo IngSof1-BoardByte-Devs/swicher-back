@@ -16,3 +16,6 @@ class FigUpdate(BaseModel):
 class FigureInBoard(BaseModel):
     type_figure: str
     indexes: List[int]
+
+class FigureDiscard(BaseModel):
+    playerId: int
