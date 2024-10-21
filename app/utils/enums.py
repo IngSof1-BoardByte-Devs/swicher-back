@@ -42,7 +42,6 @@ class FigureType(Enum):
     TYPE25 = "Type 25"
 
 class FigureStatus(Enum):
-    DISCARDED = "Discarded"
     BLOCKED = "Blocked"
     INHAND = "In Hand"
     INDECK = "In Deck"
