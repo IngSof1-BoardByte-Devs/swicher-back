@@ -80,20 +80,20 @@ class FigureService:
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
-        remaining_figures = get_figures_hand(self.db, player).extend(get_figures_deck(self.db, player))
+        remaining_figures = get_figures_hand(self.db, player) + (get_figures_deck(self.db, player))
         if len(remaining_figures) == 0:
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
             game_id = game.id
             delete_all_game(self.db, game)
-            json_ws = { "event": "game.winner", "payload": { player_id: player_id }}
+            json_ws = { "event": "game.winner", "payload": { "player_id": player_id }}
             await manager.broadcast(json.dumps(json_ws), game_id)
         
         # Elimino movimientos parciales
-        delete_partial_movements(self.db, game)
+        delete_partial_movements(self.db, game, player)
 
     
-    async def update_figure_service_status(self, figure_id: int, player_id: int) -> FigUpdate:
+    async def update_figure_status(self, figure_id: int, player_id: int) -> FigUpdate:
         figure = get_figure(self.db, figure_id)
         if not figure:
             raise Exception("La carta de figura no existe")

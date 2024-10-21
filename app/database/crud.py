@@ -150,11 +150,6 @@ def parcial_movements_exist(game: Game) -> bool:
 def get_figure(db: Session, figure_id: int) -> Figure:
     return db.query(Figure).filter(Figure.id == figure_id).first()
 
-def delete_partial_movements(db: Session, game: Game):
-    for partial_movement in game.partial_movements:
-        db.delete(partial_movement)
-    db.commit()
-
 def delete_figure(db: Session, figure: Figure):
     figure.player.figures.remove(figure)
     db.delete(figure)
