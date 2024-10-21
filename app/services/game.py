@@ -71,10 +71,11 @@ class GameService:
 
         else:
             # Si la partida ya ha comenzado y es justo turno del que abandona
-            if len(game.players) > 2 and player.turn == game.turn:
+            player_turn = player.turn
+            delete_player_game(self.db, player, game)
+            if len(game.players) > 1 and player_turn == game.turn:
                 json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
                 await manager.broadcast(json.dumps(json_ws), game.id)
-            delete_player_game(self.db, player, game)
             json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
             await manager.broadcast(json.dumps(json_ws), game_id)
             
