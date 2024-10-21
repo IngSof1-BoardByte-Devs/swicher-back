@@ -9,11 +9,11 @@ import logging
 
 router = APIRouter()
 
-@router.patch("/{card_id}", tags=["In Game"], response_model=FigUpdate)
-async def recognize_figure(card_id: int, player_id: int, db: Session = Depends(get_db)):
+@router.patch("/{card_id}/", tags=["In Game"], response_model=FigUpdate)
+async def recognize_figure(card_id: int, playerId: int, db: Session = Depends(get_db)):
     try:
         figureService = FigureService(db)
-        response = await figureService.update_figure_status(card_id, player_id)
+        response = await figureService.update_figure_status(card_id, playerId)
         return response
     except Exception as e:
         logging.error(f"Error recognize_figure: {e}")
