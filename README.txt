@@ -13,8 +13,7 @@ Para correr coverage
     `coverage run -m pytest`   
 Para ver el reporte correr  
     `coverage report`
--------------------------------------
-
+    
 Contrato de la API:
 
 POST /create-game
