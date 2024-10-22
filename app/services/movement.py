@@ -42,6 +42,8 @@ class MoveService:
             if not game.started:
                 raise Exception("Partida no iniciada")
 
+            for mov in player.movements:
+                print(f"Carta del jugador {player.username}: id={mov.id} y estado={mov.status.value}")
             return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]
     
     async def set_parcial_movement(self, id_player, id_move: int, index1:int, index2:int) -> Movement:
@@ -113,7 +115,7 @@ class MoveService:
             moves.append({"card_id": mov.movement_id,"position1": index1,"position2": index2})
             swap_board(self.db, game, mov.x1, mov.x2, mov.y1, mov.y2)
         
-        delete_partial_movements(self.db, game, player)
+        revert_partial_movements(self.db, game, player)
 
         json_ws = {"event": "moves.cancelled", "payload": moves}
         await manager.broadcast(json.dumps(json_ws), game.id)

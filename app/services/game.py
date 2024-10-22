@@ -70,8 +70,8 @@ class GameService:
             await manager.broadcast(json.dumps(json_ws), 0)
 
         else:
-            # Si la partida ya ha comenzado y es justo turno del que abandona devuelve error
-            if player.turn == game.turn:
+            # Si la partida ya ha comenzado y es justo turno del que abandona devuelve error si quedan mas de dos jugadores
+            if player.turn == game.turn and len(game.players) > 2:
                 raise Exception("No puede abandonar el jugador de turno")
             delete_player_game(self.db, player, game)
 
@@ -85,9 +85,6 @@ class GameService:
                 json_ws = {"event": "game.winner", "payload": {"player_id": player_id,}}
                 await manager.broadcast(json.dumps(json_ws), game_id)
             
-
-
-   
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
         """ Crea una partida """
