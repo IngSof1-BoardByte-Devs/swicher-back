@@ -9,16 +9,11 @@
 - Para correr el servidor (Pararse en la carpeta swicher-back):
     ` uvicorn app.main:app --reload`
 -----------Run Coverage---------------
-first  
-    $ python -m venv venv
-    $ source venv/bin/activate
-this run do after activate venv 
-  ` pip install -r requeriments.txt`
-for run coverage in venv ejecute
-   `coverage run -m pytest`
-for check the report run 
+Para correr coverage
+    `coverage run -m pytest`   
+Para ver el reporte correr  
     `coverage report`
--------------------------------------
+    
 Contrato de la API:
 
 POST /create-game

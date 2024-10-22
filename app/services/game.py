@@ -6,6 +6,7 @@ funciones que realizan operaciones más complejas y que no están directamente r
 
 from app.database.models import Game, Player
 from app.database.crud import *
+from app.schemas.figure import FigureOut
 from app.schemas.game import *
 from app.schemas.player import *
 from app.services.movement import MoveService
@@ -16,89 +17,126 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import random
+import json
+
 
 class GameService:
     def __init__(self, db: Session):
         self.db = db
 
     def get_all_games(self) -> List[GameOut]:
+        """ Obtiene todas las partidas """
         games = fetch_games(self.db)
         game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games if not g.started]
         return game_list
 
+
     def get_game(self, game_id: int) -> List[SingleGameOut]:
+        """ Obtiene una partida por su id """
         game = get_game(self.db, game_id)
         if game == None:
-            raise Exception("Error: Game not found")
+            raise Exception("Partida no encontrada")
         players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
         return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
 
+
     async def leave_game(self, player_id: int):
+        """ Elimina un jugador de una partida o elimina toda la partida si el host decide abandonar antes de iniciar """
+        
+        # Obtener el jugador por su ID
         player = get_player(self.db, player_id)
         if not player:
-            raise HTTPException(status_code=404, detail="Player not found")
+            raise Exception("Jugador no encontrado")
         
+        # Obtener la partida en la que está el jugador
         game = get_game_by_player_id(self.db, player_id)
-        
-        if player not in game.players:
-            raise HTTPException(status_code=404, detail="Player not in game")
-        
-        delete_player(self.db,player, game)
-        self.db.commit()
 
-        json_ws1 = {"event": "player_left", "data": {"player_id": player.id}}
-        await manager.broadcast(json.dumps(json_ws1), game.id)
-        
-        if len(game.players) == 1:
-            delete_all_game(self.db, game)
+        # Divide en si la partida no ha comenzado
+        json_ws = {}
+        game_id = game.id
+        username = player.username
+        if not game.started:
+            # Si el jugador es el host
+            if game.host == player:
+                delete_all_game(self.db,game)
+                json_ws = {"event": "game.cancelled", "payload": {"game_id": game_id}}
+            else:
+                # Si el jugador NO es el host
+                delete_player_lobby(self.db, player, game)
+                json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
+            
+            # Enviar evento websocket
+            await manager.broadcast(json.dumps(json_ws), game_id)
+            await manager.broadcast(json.dumps(json_ws), 0)
 
-        return {"status": "OK", "message": "Player left the game"}
-   
-    async def create_game(self, game_data: CreateGame) -> GameLeaveCreateResponse:
+        else:
+            # Si la partida ya ha comenzado y es justo turno del que abandona devuelve error si quedan mas de dos jugadores
+            if player.turn == game.turn and len(game.players) > 2:
+                raise Exception("No puede abandonar el jugador de turno")
+            delete_player_game(self.db, player, game)
+
+            json_ws = {"event": "player.left", "payload": {"game_id": game_id, "username": username}}
+            await manager.broadcast(json.dumps(json_ws), game_id)
+            
+            #Checkea si queda solo un jugador
+            if len(game.players) == 1:
+                player_id = game.players[0].id
+                delete_all_game(self.db,game)
+                json_ws = {"event": "game.winner", "payload": {"player_id": player_id,}}
+                await manager.broadcast(json.dumps(json_ws), game_id)
+            
+
+    async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
+        """ Crea una partida """
+        if not game_data.player_name:
+            raise Exception("El jugador debe tener un nombre")
+        elif not game_data.game_name:
+            raise Exception("La partida debe tener un nombre")
         game = create_game(self.db, game_data.game_name)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
-        try:
-            json_ws = {"event": "new_game", "data": {"id": game.id, "name": game.name, "num_players": len(game.players)}}
-            await manager.broadcast(json.dumps(json_ws), 0)
-        except Exception as e:
-            print(e)
-        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
-    
-    async def join_game(self, data: JoinGame) -> GameLeaveCreateResponse:
-        game = get_game(self.db, data.game_id)
+        json_ws = {"event": "game.new", "payload": {"game_id": game.id, "name": game.name, "players": len(game.players)}}
+        await manager.broadcast(json.dumps(json_ws), 0)
+        return PlayerAndGame(player_id=player.id, game_id=game.id)
+   
+
+    async def join_game(self, data: JoinGame) -> PlayerAndGame:
+        """ Un jugador se une a una partida """
+        if not data.player_name:
+            raise Exception("El jugador debe tener un nombre")
         
+        game = get_game(self.db, data.game_id)
+
         if game == None:
-            raise Exception("Error: User tries to join a non-existent game")
+            raise Exception("Partida no encontrada")
         elif game.started:
-            raise Exception("Error: The game has already begun")
+            raise Exception("Partida ya iniciada")
         if len(game.players) >= 4:
-            raise Exception("Error: Maximum players allowed")
+            raise Exception("Partida con máximo de jugadores permitidos")
         player = create_player(self.db, data.player_name, game)
 
-        json_ws1 = {"event": "join_game", "data": {"player_id": player.id, "player_name": player.username}}
-        json_ws2 = {"event": "new_player", "data": {"game_id": game.id}}
-        await manager.broadcast(json.dumps(json_ws1), game.id)
-        await manager.broadcast(json.dumps(json_ws2), 0)
+        json_ws = {"event": "player.new", "payload": {"game_id": game.id, "username": player.username}}
+        await manager.broadcast(json.dumps(json_ws), game.id)
+        await manager.broadcast(json.dumps(json_ws), 0)
 
-        return GameLeaveCreateResponse(player_id=player.id, game_id=game.id)
+        return PlayerAndGame(player_id=player.id, game_id=game.id)
     
 
     async def start_game(self, player_id: int) -> Dict:
+        """ Inicia una partida """
         player = get_player(self.db, player_id)
         if not player:
-            raise HTTPException(status_code=404, detail="Player not found")
+            raise Exception("Jugador no encontrado")
         game = get_game_by_player_id(self.db, player_id)
 
         # Manejo de errores
         if game.started:
-            raise HTTPException(status_code=400, detail="The game has already started")
+            raise Exception("La partida ya se inició")
         elif int(game.host.id) != int(player_id):
-            print(game.host.id, player_id, game.host.id == player_id)
-            raise HTTPException(status_code=403, detail="Only the game owner can start the game")
-        elif len(game.players) < 2:
-            raise HTTPException(status_code=400, detail="The game must have at least 2 players")
+            raise Exception("Sólo el dueño puede iniciar la partida")
+        elif len(game.players) < 2 or len(game.players) > 4:
+            raise Exception("La partida debe tener entre 2 a 4 jugadores para iniciar")
         
         # Actualizar el estado del juego
         put_start_game(self.db, game)
@@ -111,7 +149,6 @@ class GameService:
             player = players[i]
             put_asign_turn(self.db, player, i+1)
         
-
         # Crear el mazo de movimientos
         move_service = MoveService(self.db)
         move_service.create_movement_deck(game.id)
@@ -124,36 +161,73 @@ class GameService:
         board_service = BoardService(self.db)
         board_service.create_board(game.id)
 
-        #--------------------------hace falta el id?
-        ws_json = {"event": "start_game", "data": {"game_id": game.id}}
+        ws_json = {"event": "game.start", "payload": {"game_id": game.id}}
         await manager.broadcast(json.dumps(ws_json), game.id)
         await manager.broadcast(json.dumps(ws_json), 0)
 
         return {"status": "OK", "message": "Game started"}
 
+
     async def change_turn(self, player_id: int):
+        """ Cambia el turno de un jugador """
+        # Obtener el jugador
+        player = get_player(self.db, player_id)
+        if not player:
+            raise Exception("Jugador no encontrado")
+        
         # Obtener el juego asociado al jugador
         game = get_game_by_player_id(self.db, player_id)
-        if not game:
-            raise Exception("Error: Game not found")
         
         # Verificar si el juego ha comenzado
         if not game.started:
-            raise Exception("Error: The game has not started")
-        
-        # Obtener el jugador
-        player = get_player(self.db, player_id)
+            raise Exception("Partida no iniciada")
         
         # Verificar si es el turno del jugador
         if player.turn == game.turn:
+            #Cancela movimientos parciales si existen
+            if parcial_movements_exist(game):
+                move_service = MoveService(self.db)
+                await move_service.revert_moves(PlayerAndGame(player_id=player_id,game_id=game.id))
+
+            #Restablece cartas de movimientos si le faltan
+            len_cards = len(get_moves_hand(self.db,player))
+            if len_cards < 3:
+                deck = get_moves_deck(self.db,game)
+                #Si necesita mas de las que hay en el deck se reinicia el deck
+                if (3-len_cards) > len(deck):
+                    reset_moves_deck(self.db,game)
+                    deck = get_moves_deck(self.db,game)
+                #Asigno cartas de movimiento
+                for _ in range(3-len_cards):
+                    move = random.choice(deck)
+                    deck.remove(move)
+                    put_asign_movement(self.db, move, player)
+
+            #Restablece cartas de figura si le faltan
+            len_cards = len(get_figures_hand(self.db,player))
+            if len_cards < 3:
+                figures = []
+                #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
+                deck = get_figures_deck(self.db,player)
+                if (3-len_cards) > len(deck):
+                    for figure in deck: 
+                        put_status_figure(self.db, figure, FigureStatus.INHAND)
+                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                else:
+                    for _ in range(3-len_cards):
+                        figure = random.choice(deck)
+                        deck.remove(figure)
+                        put_status_figure(self.db, figure, FigureStatus.INHAND)
+                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                        
+                json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
+                await manager.broadcast(json.dumps(json_ws), game.id)
+
             # Actualizar el turno del juego
             update_turn_game(self.db, game)
             
-            # Verificar si el turno es válido
-            if game.turn > len(game.players) or game.turn <= 0:
-                raise Exception("Error: Invalid turn")
         else:
-            raise Exception("Error: The player is not in turn")
+            raise Exception("No es turno del jugador")
         
-        json_ws = {"event": "change_turn", "data": {"turn": game.turn}}
+        json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)

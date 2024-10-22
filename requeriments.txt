@@ -3,6 +3,7 @@ anyio==4.6.0
 bidict==0.23.1
 certifi==2024.8.30
 click==8.1.7
+coverage==6.2
 fastapi==0.115.0
 fastapi-socketio==0.0.10
 gevent==24.2.1
