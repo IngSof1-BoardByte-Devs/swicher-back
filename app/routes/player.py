@@ -17,9 +17,14 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
     """
     Permite a un jugador unirse a una partida.
     """
+    service = GameService(db)
     try:
-        service = GameService(db)
-        return await service.join_game(game_data)
+        joingame = await service.join_game(game_data)
+        return PlayerAndGame(
+            msg ="Jugador creado con éxito", 
+            player_id= joingame.player_id, 
+            game_id= joingame.game_id
+        )
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
         if (str(e) == "El jugador debe tener un nombre"
@@ -32,7 +37,7 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.delete("/{id_player}", tags=["In Game"])
+@router.delete("/{id}", tags=["In Game"])
 async def leave_game(id_player: int, db: Session = Depends(get_db)):
     """
     Args:
@@ -51,7 +56,7 @@ async def leave_game(id_player: int, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.put("/{id_player}/turn", tags=["In Game"])
+@router.put("/{id}/turn", tags=["In Game"])
 async def end_turn(id_player: int, db: Session = Depends(get_db)):
     """
     Termina el turno del jugador.
@@ -59,16 +64,14 @@ async def end_turn(id_player: int, db: Session = Depends(get_db)):
     service = GameService(db)
     try:
         await service.change_turn(id_player)
-        return {"status": "OK", "message": "Turn ended"}
+        return {"msg": "Turno finalizado"}
     
     except Exception as e:
         logging.error(f"Error end turn: {str(e)}")
         logging.error("Traceback: %s", traceback.format_exc())
-        if str(e) == "Partida no iniciada":
+        if str(e) in ["Partida no iniciada", "Jugador no encontrado"]: 
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "No es turno del jugador":
             raise HTTPException(status_code=401, detail=str(e))
-        elif str(e) == "Jugador no encontrado":
-            raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
