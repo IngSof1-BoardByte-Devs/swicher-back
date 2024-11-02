@@ -62,23 +62,29 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return await service.create_game(game_data)
+        playerandgame = await service.create_game(game_data)
+        return PlayerAndGame(
+            msg="La partida se creó con éxito",
+            player_id=playerandgame.player_id,
+            game_id=playerandgame.game_id
+        )
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
-        if str(e) == "La partida debe tener un nombre" or str(e) == "El jugador debe tener un nombre": 
+        if str(e) == "La partida debe tener un nombre" or str(e) == "El jugador debe tener un nombre":
             raise HTTPException(status_code=400, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.put("/{player_id}", tags=["Lobby"])
+@router.put("/{id}/started", tags=["Lobby"])
 async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     Inicia una partida.
     """
     service = GameService(db)
     try:
-        return await service.start_game(player_id)
+        await service.start_game(player_id)
+        return {"msg" : "Juego iniciado"}
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         if str(e) == "La partida ya se inició" or str(e) == "La partida debe tener entre 2 a 4 jugadores para iniciar":
@@ -146,7 +152,7 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.patch("/{game_id}/revert-moves", tags=["In Game"])
+@router.patch("/{id}/revert-moves", tags=["In Game"])
 async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
     service = MoveService(db)
 
