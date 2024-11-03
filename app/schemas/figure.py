@@ -3,8 +3,8 @@ from typing import List
 
 class FigureOut(BaseModel):
     player_id: int
-    id_figure: int
-    type_figure: str
+    card_id: int
+    type: int
 
 class FigUpdate(BaseModel):
     id: int

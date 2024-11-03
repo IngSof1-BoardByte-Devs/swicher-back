@@ -14,7 +14,7 @@ from app.schemas.figure import FigureOut
 from app.services.game import GameService
 from app.services.figures import FigureService
 from app.services.movement import MoveService
-from app.database.session import get_db  # Importa la función para obtener la sesión
+from app.database.session import get_db
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi import HTTPException
@@ -24,11 +24,9 @@ import logging
 
 router = APIRouter()
 
-@router.get("/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
+""" @router.get("/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
 async def get_game(game_id: int, db: Session = Depends(get_db)):
-    """
-    Obtiene informacion de la partida.
-    """
+
     service = GameService(db)
     try:
         return service.get_game(game_id)
@@ -38,21 +36,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
             logging.error("Tiro HTTPException")
             raise HTTPException(status_code=404, detail=str(e))
         else:
-            raise HTTPException(status_code=500, detail="Internal server error")
-    
-
-@router.get("/", response_model=List[GameOut], tags=["Home"])
-async def get_games(db: Session = Depends(get_db)):
-    """
-    Obtiene los juegos que no han comenzado.
-    """
-
-    service = GameService(db)
-    try:
-        return service.get_all_games()
-    except Exception as e:
-        logging.error(f"Error fetching games: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+            raise HTTPException(status_code=500, detail="Internal server error") """
     
 
 @router.post("/", response_model=PlayerAndGame, tags=["Home"])
@@ -71,7 +55,7 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.put("/{player_id}", tags=["Lobby"])
+@router.put("/{id}/started", tags=["Lobby"])
 async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     Inicia una partida.

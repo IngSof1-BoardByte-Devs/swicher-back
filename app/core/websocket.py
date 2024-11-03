@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 from app.websocket_manager import ConnectionManager
+from app.services.websocket import handle_event
 
 manager = ConnectionManager()
 
@@ -12,20 +13,21 @@ async def websocket_handler(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
 
-            if data.startswith("/join "):
+            if data.startswith("games.join"):
                 print("Se recibió un mensaje de unirse a la partida de " + str(websocket))
                 # Desconectar del grupo actual y conectar al nuevo
                 game_id = int(data.split(" ", 1)[1])
                 manager.move(websocket, 0, game_id)
 
-            elif data.startswith("/leave"):
+            elif data.startswith("games.leave"):
                 print("Se recibió un mensaje para volver al home de " + str(websocket))
                 # Desconectar del grupo actual y conectar a la sala 0
                 game_id = int(data.split(" ", 1)[1])
                 manager.move(websocket, game_id, 0)
 
             else:
-                await manager.broadcast(data, 0)
+                await handle_event(websocket, data)
+                websocket.send_text
     except Exception as e:
         print(e)
     finally:

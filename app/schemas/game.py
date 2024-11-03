@@ -21,8 +21,9 @@ class SingleGameOut(BaseModel):
     players: List[PlayerOut]
 
 class CreateGame(BaseModel):
-    player_name: str
+    msg: str
     game_name: str
+    player_name: str
 
 class GameCreateResponse(BaseModel):
     status: str

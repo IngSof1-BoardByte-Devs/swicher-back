@@ -38,6 +38,12 @@ class ConnectionManager:
                 if len(self.groups[group]) == 0:
                     del self.groups[group]
 
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        """
+        Envía un mensaje personal a un usuario específico.
+        """
+        await websocket.send_text(message)
+
     async def broadcast(self, message: str, group: int):
         """
         Envía un mensaje a todas las conexiones de un grupo específico.
