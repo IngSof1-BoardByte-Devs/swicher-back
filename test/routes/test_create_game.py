@@ -7,47 +7,39 @@ from app.schemas.game import CreateGame, PlayerAndGame
 
 class TestGetMovements:
 
-    @pytest.mark.parametrize("game_data, expected_exception", [
+    @pytest.mark.parametrize("game_data, expected_return, expected_status, expected_service", [
         #Caso normal
-        (CreateGame(player_name="player",game_name="game"), None),
+        (CreateGame(player_name="player",game_name="game"),
+         {"msg": "La partida se creó con éxito",
+	     "game_id": 1,
+	     "player_id": 1},
+         200, PlayerAndGame(game_id=1,player_id=1)),
         #Caso sin nombre del jugador 
         (CreateGame(player_name="",game_name="game"),
-            HTTPException(status_code=400, detail="El jugador debe tener un nombre")),
+         {"detail": "Nombre de jugador incorrecto"},
+         400, Exception("Nombre de jugador incorrecto")),
         #Caso sin nombre de la partida 
         (CreateGame(player_name="player",game_name=""),
-            HTTPException(status_code=400, detail="La partida debe tener un nombre")),
+         {"detail": "Nombre de partida incorrecto"},
+         400, Exception("Nombre de partida incorrecto")),
         #Caso excepcional
         (CreateGame(player_name="player",game_name="game"),
-            HTTPException(status_code=500, detail="Internal server error"))
+         {"detail": "Internal server error"},
+         500, Exception("Internal server error")),
     ])
-    def test_get_game(self, mocker, game_data, expected_exception):
+    def test_get_game(self, mocker, game_data, expected_return, expected_status, expected_service):
         #Cliente
         client = TestClient(app)
-
-        #Respuesta de base de datos
-        game = PlayerAndGame(player_id=1,game_id=1)
         
         #Simula la función de create_game
-        mock_create_game = mocker.patch("app.services.game.GameService.create_game")
+        mock_create_game = mocker.patch("app.routes.game.GameService.create_game")
 
-        #Simulo la respuesta de create_game
-        if game_data.player_name:
-            if game_data.game_name:
-                if not expected_exception:
-                    mock_create_game.return_value = game
-                else:
-                    mock_create_game.side_effect = Exception("Internal server error")
-            else:
-                mock_create_game.side_effect = Exception("La partida debe tener un nombre")
+        if isinstance(expected_service, Exception):
+            mock_create_game.side_effect = expected_service
         else:
-            mock_create_game.side_effect = Exception("El jugador debe tener un nombre")
+            mock_create_game.return_value = expected_service
         
-        
-        #Verifico si create_game devuelve error o no
+        #Instancio la función
         response = client.post("/games/", json=game_data.model_dump())
-        if expected_exception:
-            assert response.status_code == expected_exception.status_code
-            assert response.json() == {"detail": expected_exception.detail}  
-        else:
-            assert response.status_code == 200
-            assert response.json() == {"player_id": 1,"game_id": 1}
+        assert response.status_code == expected_status
+        assert response.json() == expected_return
