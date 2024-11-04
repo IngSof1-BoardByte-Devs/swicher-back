@@ -6,6 +6,7 @@ from app.core.websocket import manager
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 import random
 
 class FigureService:
@@ -71,9 +72,11 @@ class FigureService:
         for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND:
-                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
+                    figures.append(FigureOut(player_id=p.id, card_id=m.id, type=m.type))
 
-        return figures
+        json_compatible_payload = jsonable_encoder(figures)
+
+        return json_compatible_payload
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
         # Elimino la figura

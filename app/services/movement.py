@@ -4,6 +4,7 @@ from app.schemas.movement import *
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 import random
 from app.core.websocket import manager
 
@@ -42,7 +43,9 @@ class MoveService:
             if not game.started:
                 raise Exception("Partida no iniciada")
 
-            return [MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements]
+            json_compatible_payload = jsonable_encoder([MovementOut(id_movement = m.id, type_movement=m.type) for m in player.movements])
+            
+            return json_compatible_payload
     
     async def set_parcial_movement(self, id_player, id_move: int, index1:int, index2:int) -> Movement:
         x1 = index1 // 6
@@ -90,21 +93,19 @@ class MoveService:
     
     
     async def revert_moves(self, data: PlayerAndGame):
-        game = get_game(self.db, data.game_id)
+        player = get_player(self.db, data.player_id)
+        if not player:
+            raise Exception("Jugador no encontrado")
+        
+        game = get_game(self.db, player.game_id)
         if not game:
             raise Exception("Partida no encontrada")
         if not game.started:
             raise Exception("Partida no iniciada")
-        if not parcial_movements_exist(game):
-            raise Exception("No hay cambios para revertir")
-        
-        player = get_player(self.db, data.player_id)
-        if not player:
-            raise Exception("Jugador no encontrado")
-        if player not in game.players:
-            raise Exception("El jugador no pertenece a esta partida")
         if player.turn != game.turn:
             raise Exception("No tienes autorización para revertir estos cambios")
+        if not parcial_movements_exist(game):
+            raise Exception("No hay cambios para revertir")
         
         moves = []
         for mov in reversed(game.partial_movements):

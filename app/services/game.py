@@ -27,7 +27,14 @@ class GameService:
     def get_all_games(self) -> List[GameOut]:
         """ Obtiene todas las partidas """
         games = fetch_games(self.db)
-        game_list = [GameOut(id=g.id, name=g.name, num_players=len(g.players)) for g in games if not g.started]
+        game_list = [
+            {
+                "game_id": g.id,
+                "game_name": g.name,
+                "current_players": len(g.players)
+            }
+            for g in games if not g.started
+        ]
         return game_list
 
 
@@ -91,17 +98,20 @@ class GameService:
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
         """ Crea una partida """
+
         if not game_data.player_name:
-            raise Exception("El jugador debe tener un nombre")
+            raise Exception("Nombre de jugador incorrecto")
         elif not game_data.game_name:
-            raise Exception("La partida debe tener un nombre")
+            raise Exception("Nombre de partida incorrecto")
+        
         game = create_game(self.db, game_data.game_name)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
+
         json_ws = {"event": "game.new", "payload": {"game_id": game.id, "name": game.name, "players": len(game.players)}}
         await manager.broadcast(json.dumps(json_ws), 0)
-        return PlayerAndGame(player_id=player.id, game_id=game.id)
+        return PlayerAndGame(msg="La partida se creó con éxito", game_id=game.id, player_id=player.id)
    
 
     async def join_game(self, data: JoinGame) -> PlayerAndGame:

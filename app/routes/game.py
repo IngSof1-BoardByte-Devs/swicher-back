@@ -24,7 +24,7 @@ import logging
 
 router = APIRouter()
 
-""" @router.get("/{game_id}", response_model=SingleGameOut, tags=["Lobby"])
+@router.get("/{game_id}", response_model=SingleGameOut, tags=["Debugging"])
 async def get_game(game_id: int, db: Session = Depends(get_db)):
 
     service = GameService(db)
@@ -36,7 +36,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db)):
             logging.error("Tiro HTTPException")
             raise HTTPException(status_code=404, detail=str(e))
         else:
-            raise HTTPException(status_code=500, detail="Internal server error") """
+            raise HTTPException(status_code=500, detail="Internal server error")
     
 
 @router.post("/", response_model=PlayerAndGame, tags=["Home"])
@@ -46,10 +46,15 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return await service.create_game(game_data)
+        playerandgame = await service.create_game(game_data)
+        return PlayerAndGame(
+            msg="La partida se creó con éxito",
+            player_id=playerandgame.player_id,
+            game_id=playerandgame.game_id
+        )
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
-        if str(e) == "La partida debe tener un nombre" or str(e) == "El jugador debe tener un nombre": 
+        if str(e) == "La partida debe tener un nombre" or str(e) == "El jugador debe tener un nombre":
             raise HTTPException(status_code=400, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
@@ -62,7 +67,8 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
     """
     service = GameService(db)
     try:
-        return await service.start_game(player_id)
+        await service.start_game(player_id)
+        return {"msg" : "Juego iniciado"}
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
         if str(e) == "La partida ya se inició" or str(e) == "La partida debe tener entre 2 a 4 jugadores para iniciar":
@@ -75,7 +81,7 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
        
 
-@router.get("/{id_game}/figure-cards", response_model=List[FigureOut], tags=["In Game"])
+@router.get("/{id_game}/figure-cards", response_model=List[FigureOut], tags=["Debugging"])
 async def get_figure_cards(id_game: int, db: Session = Depends(get_db)):
     """
     Obtiene todas las cartas de figura que tienen los jugadores en la mano.
@@ -93,7 +99,7 @@ async def get_figure_cards(id_game: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/{id_game}/board", response_model=BoardOut, tags=["In Game"])
+@router.get("/{id_game}/board", response_model=BoardOut, tags=["Debugging"])
 async def board(id_game : int, db: Session = Depends(get_db)):
     """
     Obtiene el tablero
@@ -112,7 +118,7 @@ async def board(id_game : int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/{player_id}/move-cards", response_model=List[MovementOut], tags=["In Game"])
+@router.get("/{player_id}/move-cards", response_model=List[MovementOut], tags=["Debugging"])
 async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
     """
     Obtiene las cartas de movimiento de un jugador.
@@ -129,19 +135,22 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
+        
 
-@router.patch("/{game_id}/revert-moves", tags=["In Game"])
-async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
+@router.patch("/{id}/revert-movements", tags=["In Game"])
+async def revert_moves(revert_request: RevertRequest, db: Session = Depends(get_db)):
     service = MoveService(db)
 
     try:
-        await service.revert_moves(PlayerAndGame(player_id=revert_request.player_id,game_id=game_id))
+        await service.revert_moves(player_id=revert_request.player_id)
         return { "message" : "Turn reverted successfully" }
     
     except Exception as e:
         if "No hay cambios para revertir" in str(e):
-            raise HTTPException(status_code=404, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
         elif "No tienes autorización para revertir estos cambios" in str(e):
             raise HTTPException(status_code=401, detail=str(e))
+        elif "Jugador no encontrado" in str(e):
+            raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")

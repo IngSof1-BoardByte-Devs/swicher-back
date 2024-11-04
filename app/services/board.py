@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 from app.database.crud import *
 from app.schemas.game import *
 from app.schemas.board import *
@@ -8,6 +9,7 @@ from app.utils.dict import *
 from app.core.websocket import manager
 from typing import Dict, List
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
 import random
 
 class BoardService:
@@ -28,20 +30,23 @@ class BoardService:
         update_board(self.db, game, matrix)
         
 
-    async def get_board_values(self, id_game: int) -> List[Color]:
+    async def get_board_values(self, id_game: int):
         game = get_game(self.db, id_game)
         if not game:
             raise Exception("Partida no encontrada")
         elif not game.started:
             raise Exception("Partida no iniciada")
         matrix = game.board_matrix
-        board_values = []
+        board_values = [matrix[i] for i in range(36)]
+        
         for i in range(36):
-            board_values.append(Color(color=matrix[i]))
+            board_values.append(matrix[i])
         
         await self.get_figures_from_board(game.id)
 
-        return BoardOut(board=board_values)
+        payload = {"payload": board_values}
+        json_compatible_payload = jsonable_encoder(payload)
+        return json_compatible_payload
     
 
     def get_valid_figures(self, array):
