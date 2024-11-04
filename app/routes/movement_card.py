@@ -10,7 +10,7 @@ import logging
 router = APIRouter()
 
 
-@router.patch("/{id}/status", tags=["In Game"])
+@router.put("/{id}/status", tags=["In Game"])
 async def use_movement_card(card_id: int, movement_request: MovementPartial, db: Session = Depends(get_db)):
 
     move_service = MoveService(db)
