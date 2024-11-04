@@ -152,7 +152,7 @@ async def get_movement_cards(player_id: int, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
-@router.patch("/{id}/revert-moves", tags=["In Game"])
+@router.put("/{id}/revert-moves", tags=["In Game"])
 async def revert_moves(game_id: int, revert_request: RevertRequest, db: Session = Depends(get_db)):
     service = MoveService(db)
 

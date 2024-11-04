@@ -9,12 +9,12 @@ import logging
 
 router = APIRouter()
 
-@router.patch("/{card_id}/", tags=["In Game"], response_model=FigUpdate)
+@router.put("/{id}/status", tags=["In Game"])
 async def recognize_figure(card_id: int, playerId: FigureDiscard, db: Session = Depends(get_db)):
     try:
         figureService = FigureService(db)
-        response = await figureService.update_figure_status(card_id, playerId.playerId)
-        return response
+        await figureService.update_figure_status(card_id, playerId.playerId)
+        return {"msg":"Carta usanda con exito"}
     except Exception as e:
         logging.error(f"Error recognize_figure: {e}")
         if str(e) == "La carta de figura no existe":
