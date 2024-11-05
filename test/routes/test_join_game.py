@@ -10,7 +10,7 @@ class TestGetMovements:
         #Caso normal
         (JoinGame(game_id=1,player_name="test"),
          PlayerAndGame(player_id=2, game_id=1),
-         200, {"player_id": 2, "game_id": 1}),
+         200, { 'msg': 'Jugador creado con éxito', "game_id": 1, "player_id": 2}),
         #Caso con error al enviar nombre vacio
         (JoinGame(game_id=1,player_name=""),
          Exception("El jugador debe tener un nombre"), 400,
