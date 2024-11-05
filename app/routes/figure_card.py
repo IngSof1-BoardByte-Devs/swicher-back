@@ -10,8 +10,9 @@ import logging
 router = APIRouter()
 
 @router.put("/{id}/status", tags=["In Game"])
-async def recognize_figure(card_id: int, playerId: FigureDiscard, db: Session = Depends(get_db)):
+async def recognize_figure(id: int, playerId: FigureDiscard, db: Session = Depends(get_db)):
     try:
+        card_id = id
         figureService = FigureService(db)
         await figureService.update_figure_status(card_id, playerId.playerId)
         return {"msg":"Carta usanda con exito"}
