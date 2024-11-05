@@ -5,11 +5,11 @@ from app.main import app
 
 class TestGetMovements:
 
-    @pytest.mark.parametrize("id_player, service_return,expected_status, expected_response", [
+    @pytest.mark.parametrize("id, service_return,expected_status, expected_response", [
         #Caso normal
-        (1, None, 200, {"status": "OK", "message": "Turn ended"}),
+        (1, None, 200, {"msg": "Turno finalizado"}),
         #Caso con error de partida no iniciada
-        (2, Exception("Partida no iniciada"), 400,{"detail": "Partida no iniciada"}),
+        (2, Exception("Partida no iniciada"), 404,{"detail": "Partida no iniciada"}),
         #Caso con error de no ser el turno del jugador
         (3, Exception("No es turno del jugador"), 401,{"detail": "No es turno del jugador"}),
         #Caso con error de no encontrarse el jugador
@@ -17,7 +17,7 @@ class TestGetMovements:
         #Caso excepcional
         (1, Exception("Internal server error"),500, {"detail": "Internal server error"})
     ])
-    def test_end_turn(self, mocker, id_player, service_return,expected_status, expected_response):
+    def test_end_turn(self, mocker, id, service_return,expected_status, expected_response):
         #Cliente
         client = TestClient(app)
 
@@ -26,7 +26,7 @@ class TestGetMovements:
         if isinstance(service_return, Exception):
             mock_end_turn.side_effect = service_return
 
-        response = client.put(f"/players/{id_player}/turn")
+        response = client.put(f"/players/{id}/turn")
 
         assert response.status_code == expected_status
         assert response.json() == expected_response
