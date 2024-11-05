@@ -11,13 +11,13 @@ class TestRevertMoves:
          RevertRequest(player_id=1),
          None,  # No se devuelve nada de GameService.revert_moves
          200,
-         {"message": "Turn reverted successfully"}
+         { "msg" : "Movimientos revertidos" }
         ),
         # Caso existencial
         (2,
          RevertRequest(player_id=1),
          Exception("No hay cambios para revertir"),
-         404,
+         400,
          {"detail": "No hay cambios para revertir"}
          ),
          # Caso error de autorización
