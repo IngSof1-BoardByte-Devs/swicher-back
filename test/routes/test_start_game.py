@@ -29,7 +29,7 @@ class TestGetMovements:
         client = TestClient(app)
 
         #Respuesta de base de datos
-        response_expected = {"status": "OK", "message": "Game started"}
+        response_expected = {"msg" : "Juego iniciado"}
         
         #Simula la función de start_game
         mock_start_game = mocker.patch("app.services.game.GameService.start_game")
@@ -51,11 +51,11 @@ class TestGetMovements:
         
         
         #Verifico si start_game devuelve error o no
-        response = client.put("/games/{player_id}")
+        response = client.put("/games/{id}/started")
         if expected_exception:
             assert response.status_code == expected_exception.status_code
             assert response.json() == {"detail": expected_exception.detail}  
         else:
             assert response.status_code == 200
-            assert response.json() == {"status": "OK","message": "Game started"}
+            assert response.json() == {"msg" : "Juego iniciado"}
 
