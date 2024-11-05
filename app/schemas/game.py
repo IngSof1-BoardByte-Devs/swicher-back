@@ -34,7 +34,7 @@ class JoinGame(BaseModel):
     player_name: str
 
 class PlayerAndGame(BaseModel):
-    msg: Optional[str] = None
+    msg: str = None
     player_id: int
     game_id: int
 

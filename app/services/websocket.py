@@ -1,16 +1,16 @@
 #Handle generic websocket data
 from fastapi import WebSocket
 from app.websocket_manager import ConnectionManager
-from app.services.game import GameService
-from app.services.board import BoardService
-from app.services.player import PlayerService
-from app.services.movement import MoveService
-from app.services.figures import FigureService
 import json
 
 manager = ConnectionManager()
 
 async def handle_event(websocket: WebSocket, data: str):
+    from app.services.game import GameService
+    from app.services.board import BoardService
+    from app.services.player import PlayerService
+    from app.services.movement import MoveService
+    from app.services.figures import FigureService
     game_service = GameService()
     board_service = BoardService()
     player_service = PlayerService()

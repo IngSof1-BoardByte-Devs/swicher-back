@@ -1,6 +1,6 @@
 import traceback
 from fastapi import APIRouter, Depends, Response
-from app.schemas.player import PlayerName
+from app.schemas.player import PlayerRequest
 from app.schemas.game import JoinGame, PlayerAndGame
 from app.services.player import PlayerService
 from app.services.game import GameService

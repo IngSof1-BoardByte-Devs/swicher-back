@@ -9,12 +9,12 @@ class FigureOut(BaseModel):
 class FigUpdate(BaseModel):
     id: int
     id_player: int
-    type: str  # Tipo de figura (Type 1, Type 2, ..., Type 25)
+    type: int  # Tipo de figura (Type 1, Type 2, ..., Type 25)
     discarded: bool
     blocked: bool
 
 class FigureInBoard(BaseModel):
-    type_figure: str
+    type_figure: int
     indexes: List[int]
 
 class FigureDiscard(BaseModel):
