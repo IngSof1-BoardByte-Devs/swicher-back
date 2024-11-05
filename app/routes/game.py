@@ -94,7 +94,7 @@ async def start_game(id = int, player_id = int, db: Session = Depends(get_db)):
         elif str(e) in ["Jugador no encontrado","Partida no encontrada"]:
             raise HTTPException(status_code=404, detail=str(e))
         elif str(e) == "El jugador no pertenece a la partida":
-            raise HTTPException(status_code=404, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
        
@@ -161,12 +161,14 @@ async def revert_moves(id: int, revert_request: RevertRequest, db: Session = Dep
     try:
         game_id = id
         await service.revert_moves(PlayerAndGame(player_id=revert_request.player_id,game_id=game_id))
-        return { "message" : "Turn reverted successfully" }
+        return { "msg" : "Movimientos revertidos" }
     
     except Exception as e:
-        if "No hay cambios para revertir" in str(e):
-            raise HTTPException(status_code=404, detail=str(e))
+        if str(e) in ["No hay cambios para revertir","El jugador no pertenece a la partida"]:
+            raise HTTPException(status_code=400, detail=str(e))
         elif "No tienes autorización para revertir estos cambios" in str(e):
             raise HTTPException(status_code=401, detail=str(e))
+        elif str(e) in ["Jugador no encontrado","Partida no encontrada"]:
+            raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
