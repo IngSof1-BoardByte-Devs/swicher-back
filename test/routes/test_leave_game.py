@@ -5,12 +5,12 @@ from app.main import app
 
 class TestGetMovements:
 
-    @pytest.mark.parametrize("id_player, service_return, expected_status, expected_response", [
+    @pytest.mark.parametrize("id, service_return, expected_status, expected_response", [
         #Caso normal
         (1,
-         {"status": "OK", "message": "Player left the game"},
+         { "msg": "salio del juego" },
          200,
-         {"status": "OK", "message": "Player left the game"}
+         { "msg": "salio del juego" }
         ),
         #Caso con error de jugador no encontrado
         (2, Exception("Jugador no encontrado"), 404, {"detail": "Jugador no encontrado"}),
@@ -20,7 +20,7 @@ class TestGetMovements:
         #Caso excepcional
         (1, Exception("Internal server error"), 500, {"detail": "Internal server error"})
     ])
-    def test_leave_game(self, mocker, id_player, service_return, expected_status, expected_response):
+    def test_leave_game(self, mocker, id, service_return, expected_status, expected_response):
         #Cliente
         client = TestClient(app)
 
@@ -31,7 +31,7 @@ class TestGetMovements:
         else:
             mock_leave_game.return_value = service_return
 
-        response = client.delete(f"/players/{id_player}")
+        response = client.delete(f"/players/{id}")
 
         assert response.status_code == expected_status
         assert response.json() == expected_response
