@@ -8,9 +8,9 @@ class TestGetMovements:
     @pytest.mark.parametrize("id, service_return, expected_status, expected_response", [
         #Caso normal
         (1,
-         { "msg": "salio del juego" },
+         { 'msg': 'Salió del juego' },
          200,
-         { "msg": "salio del juego" }
+         { 'msg': 'Salió del juego' }
         ),
         #Caso con error de jugador no encontrado
         (2, Exception("Jugador no encontrado"), 404, {"detail": "Jugador no encontrado"}),
