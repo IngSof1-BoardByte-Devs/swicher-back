@@ -65,8 +65,8 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
         playerandgame = await service.create_game(game_data)
         return PlayerAndGame(
             msg="La partida se creó con éxito",
-            player_id=playerandgame.player_id,
-            game_id=playerandgame.game_id
+            game_id=playerandgame.game_id,
+            player_id=playerandgame.player_id
         )
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
@@ -77,13 +77,13 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}/started", tags=["Lobby"])
-async def start_game(player_id = int, db: Session = Depends(get_db)):
+async def start_game(id = int, player_id = int, db: Session = Depends(get_db)):
     """
     Inicia una partida.
     """
     service = GameService(db)
     try:
-        await service.start_game(player_id)
+        await service.start_game(id, player_id)
         return {"msg" : "Juego iniciado"}
     except Exception as e:
         logging.error(f"Error starting game: {str(e)}")
@@ -91,7 +91,9 @@ async def start_game(player_id = int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "Sólo el dueño puede iniciar la partida":
             raise HTTPException(status_code=401, detail=str(e))
-        elif str(e) == "Jugador no encontrado":
+        elif str(e) in ["Jugador no encontrado","Partida no encontrada"]:
+            raise HTTPException(status_code=404, detail=str(e))
+        elif str(e) == "El jugador no pertenece a la partida":
             raise HTTPException(status_code=404, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")

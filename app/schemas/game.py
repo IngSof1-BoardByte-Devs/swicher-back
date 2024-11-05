@@ -35,8 +35,8 @@ class JoinGame(BaseModel):
 
 class PlayerAndGame(BaseModel):
     msg: Optional[str] = None
-    player_id: int
     game_id: int
+    player_id: int
 
 class RevertRequest(BaseModel):
     player_id: int
