@@ -40,15 +40,11 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
 
 @router.delete("/{id}", tags=["In Game"])
 async def leave_game(id: int, db: Session = Depends(get_db)):
-    """
-    Args:
-        id_player (int): ID del jugador.
-    """
     service = GameService(db)
     try:
         id_player = id
         await service.leave_game(id_player)
-        return { "msg": "salio del juego" }
+        return { "msg": "Salió del juego" }
     except Exception as e:
         logging.error(f"Error leaving game: {str(e)}")
         if str(e) == "Jugador no encontrado":
