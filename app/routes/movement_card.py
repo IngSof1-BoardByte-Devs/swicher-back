@@ -11,10 +11,11 @@ router = APIRouter()
 
 
 @router.put("/{id}/status", tags=["In Game"])
-async def use_movement_card(card_id: int, movement_request: MovementPartial, db: Session = Depends(get_db)):
+async def use_movement_card(id: int, movement_request: MovementPartial, db: Session = Depends(get_db)):
 
     move_service = MoveService(db)
     try:
+        card_id = id
         await move_service.set_parcial_movement(movement_request.playerId, card_id,
                                                  movement_request.index1,movement_request.index2)
         
