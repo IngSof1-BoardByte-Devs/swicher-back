@@ -59,12 +59,13 @@ async def leave_game(id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/{id}/turn", tags=["In Game"])
-async def end_turn(id_player: int, db: Session = Depends(get_db)):
+async def end_turn(id: int, db: Session = Depends(get_db)):
     """
     Termina el turno del jugador.
     """
     service = GameService(db)
     try:
+        id_player = id
         await service.change_turn(id_player)
         return {"msg": "Turno finalizado"}
     
@@ -72,7 +73,7 @@ async def end_turn(id_player: int, db: Session = Depends(get_db)):
         logging.error(f"Error end turn: {str(e)}")
         logging.error("Traceback: %s", traceback.format_exc())
         if str(e) in ["Partida no iniciada", "Jugador no encontrado"]: 
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=404, detail=str(e))
         elif str(e) == "No es turno del jugador":
             raise HTTPException(status_code=401, detail=str(e))
         else:
