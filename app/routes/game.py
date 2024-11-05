@@ -70,7 +70,7 @@ async def create_game(game_data: CreateGame, db: Session = Depends(get_db)):
         )
     except Exception as e:
         logging.error(f"Error creating game: {str(e)}")
-        if str(e) == "La partida debe tener un nombre" or str(e) == "El jugador debe tener un nombre":
+        if str(e) == "Nombre de partida incorrecto" or str(e) == "Nombre de jugador incorrecto":
             raise HTTPException(status_code=400, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
