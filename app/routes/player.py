@@ -22,8 +22,9 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
         joingame = await service.join_game(game_data)
         return PlayerAndGame(
             msg ="Jugador creado con éxito", 
-            player_id= joingame.player_id, 
-            game_id= joingame.game_id
+            game_id= joingame.game_id,
+            player_id= joingame.player_id 
+            
         )
     except Exception as e:
         logging.error(f"Error joining game: {str(e)}")
