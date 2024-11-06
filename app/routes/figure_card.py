@@ -20,7 +20,7 @@ async def recognize_figure(id: int, playerId: FigureDiscard, db: Session = Depen
         logging.error(f"Error recognize_figure: {e}")
         if str(e) == "La carta de figura no existe":
             raise HTTPException(status_code=404, detail=str(e))
-        elif str(e) == "La carta/jugador no pertenece a este juego":
+        elif str(e) == "No tienes autorización para revertir estos cambios":
             raise HTTPException(status_code=401, detail=str(e))
         elif str(e) == "La carta debe estar en la mano":
             raise HTTPException(status_code=400, detail=str(e))
