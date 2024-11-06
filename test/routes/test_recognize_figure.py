@@ -24,9 +24,9 @@ class TestGetMovements:
         ),
         # Caso con error carta/jugador no pertenece a este juego
         (1, FigureDiscard(playerId=3),
-         Exception("La carta/jugador no pertenece a este juego"),
+         Exception("No tienes autorización para revertir estos cambios"),
          401,
-         {"detail": "La carta/jugador no pertenece a este juego"}
+         {"detail": "No tienes autorización para revertir estos cambios"}
         ),
         # Caso con error carta debe estar en la mano
         (2, FigureDiscard(playerId=1),
