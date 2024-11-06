@@ -19,14 +19,14 @@ class FigureService:
         complex_deck = []
 
         # Agrego las figuras fáciles al mazo
-        easyTypes = [member for name, member in FigureType.__members__.items() if 19 <= int(name[4:]) <= 25]
+        easyTypes = [member for name, member in FigureType.__members__.items() if 19 <= member.value <= 25]
         for i in range(14):
             figure_type = easyTypes[i % len(easyTypes)]
             figure = new_figure(self.db, figure_type, game)
             easy_deck.append(figure)
 
         # Agrego las figuras complejas al mazo
-        complexTypes = [member for name, member in FigureType.__members__.items() if 1 <= int(name[4:]) <= 18]
+        complexTypes = [member for name, member in FigureType.__members__.items() if 1 <= member.value <= 18]
         for i in range(36):
             figure_type = complexTypes[i % len(complexTypes)]
             figure = new_figure(self.db, figure_type, game)
@@ -51,7 +51,6 @@ class FigureService:
                 figure = random.choice(complex_deck)
                 complex_deck.remove(figure)
                 put_asign_figure(self.db, figure, player)
-        
         
         # Asigno las figuras que van a iniciar en juego
         for i in range(len(game.players)):
@@ -83,7 +82,7 @@ class FigureService:
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
-        remaining_figures = get_figures_hand(self.db, player) + (get_figures_deck(self.db, player))
+        remaining_figures = get_figures_hand(self.db, player) + get_figures_deck(self.db, player)
         if len(remaining_figures) == 0:
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id

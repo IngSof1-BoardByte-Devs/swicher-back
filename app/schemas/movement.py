@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 class MovementOut(BaseModel):
     id_movement : int
-    type_movement : str
+    type_movement : int
 
 class MovementRequest(BaseModel):
     player_id: int
@@ -10,7 +10,7 @@ class MovementRequest(BaseModel):
 class Movement(BaseModel):
     card_id: int
     id_player: int
-    type: str
+    type: int
 
 class MovementPartial(BaseModel):
     playerId: int

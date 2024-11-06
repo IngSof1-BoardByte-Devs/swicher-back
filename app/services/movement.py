@@ -17,7 +17,7 @@ class MoveService:
         deck = []
 
         # Creo un mazo de 36 movimientos
-        types = list(MovementType.__members__.values())
+        types = list(MovementType)
         for i in range(36):
             movement_type = types[i % len(types)]
             movement = create_movement(self.db, game, movement_type)
@@ -84,7 +84,7 @@ class MoveService:
         if not move:
             raise Exception("La carta de movimiento no existe")
         
-        valid_moves = ValidMoves[str(move.type).replace("MovementType.", "")].value
+        valid_moves = ValidMoves[move.type.name].value
 
         for dx, dy in valid_moves:
             if x1 == y1 + dx and x2 == y2 + dy: return True

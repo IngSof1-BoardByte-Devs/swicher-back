@@ -4,6 +4,7 @@ Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es d
 funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
 """
 
+import logging
 from app.database.models import Game, Player
 from app.database.crud import *
 from app.schemas.figure import FigureOut
@@ -26,17 +27,21 @@ class GameService:
 
     def get_all_games(self) -> List[GameOut]:
         """ Obtiene todas las partidas """
-        games = fetch_games(self.db)
-        game_list = [
-            {
-                "game_id": g.id,
-                "game_name": g.name,
-                "current_players": len(g.players)
-            }
-            for g in games if not g.started
-        ]
-        return game_list
-
+        logging.info("Starting get_all_games")
+        try:
+            games = fetch_games(self.db)
+            game_list = [
+                {
+                    "game_id": g.id,
+                    "game_name": g.name,
+                    "current_players": len(g.players)
+                }
+                for g in games if not g.started
+            ]
+            return game_list
+        except Exception as e:
+            logging.error("Error in get_all_games: %s", e)
+            raise
 
     def get_game(self, game_id: int) -> List[SingleGameOut]:
         """ Obtiene una partida por su id """

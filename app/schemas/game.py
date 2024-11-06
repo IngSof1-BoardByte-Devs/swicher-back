@@ -3,10 +3,9 @@ Los archivos de schemas se utilizan para definir los esquemas Pydantic. Siven pa
 y manejar los datos que se envían y reciben en las peticiones HTTP.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .player import PlayerOut
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 class GameOut(BaseModel):
     id: int
@@ -18,7 +17,7 @@ class SingleGameOut(BaseModel):
     name: str
     started: bool
     turn: int
-    bloqued_color: int | None
+    bloqued_color: Optional[int]
     players: List[PlayerOut]
 
 class CreateGame(BaseModel):
@@ -34,7 +33,7 @@ class JoinGame(BaseModel):
     player_name: str
 
 class PlayerAndGame(BaseModel):
-    msg: str = None
+    msg: Optional[str] = Field(default=None)
     player_id: int
     game_id: int
 
