@@ -45,8 +45,8 @@ async def handle_event(websocket: WebSocket, data: str):
 
         # Events de Movement
         elif data.startswith("movement-cards.fetch"):
-            game_id = int(data.split(" ", 1)[1])
-            movements = movement_service.get_movements(game_id)
+            player_id = int(data.split(" ", 1)[1])
+            movements = movement_service.get_movements(player_id)
             await manager.send_personal_message(json.dumps(movements), websocket)
 
         # Events de Figure
