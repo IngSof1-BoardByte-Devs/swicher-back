@@ -51,7 +51,7 @@ class TestRevertMoves:
         mocker.patch("app.routes.game.MoveService.revert_moves", side_effect=mock_revert_moves)
         
         # Realizar la petición con el client.put en la ruta correcta
-        response = client.put(f"games/{id}/revert-moves", json=revert_request.model_dump())
+        response = client.put(f"games/{id}/revert-movements", json=revert_request.model_dump())
         
         # Verificar el status y el contenido de la respuesta
         assert response.status_code == expected_status
