@@ -207,6 +207,13 @@ def get_figures_hand(db,player):
     ).all()
     return figures_in_hand
 
+def get_figures_hand_game(db, game_id):
+    figures_in_hand = db.query(Figure).filter(
+        Figure.game_id == game_id,
+        Figure.status == FigureStatus.INHAND
+    ).all()
+    return figures_in_hand
+
 def get_figures_deck(db,player):
     figures_in_deck = db.query(Figure).filter(
         Figure.player == player,
