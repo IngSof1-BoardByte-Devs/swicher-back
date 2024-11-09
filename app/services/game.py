@@ -202,32 +202,39 @@ class GameService:
                     move = random.choice(deck)
                     deck.remove(move)
                     put_asign_movement(self.db, move, player)
-
-            #Restablece cartas de figura si le faltan
-            len_cards = len(get_figures_hand(self.db,player))
-            if len_cards < 3:
-                figures = []
-                #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
-                deck = get_figures_deck(self.db,player)
-                if (3-len_cards) > len(deck):
-                    for figure in deck: 
-                        put_status_figure(self.db, figure, FigureStatus.INHAND)
-                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
-                else:
-                    for _ in range(3-len_cards):
-                        figure = random.choice(deck)
-                        deck.remove(figure)
-                        put_status_figure(self.db, figure, FigureStatus.INHAND)
-                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
-                        
-                json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
-                await manager.broadcast(json.dumps(json_ws), game.id)
-
-            # Actualizar el turno del juego
-            update_turn_game(self.db, game)
+       
+            # Verifica si el jugador tiene alguna carta de figura bloqueada
+            hand_figures = get_figures_hand(self.db, player)
+            blocked_in_hand = any(fig.status == FigureStatus.BLOCKED for fig in hand_figures)
             
-        else:
-            raise Exception("No es turno del jugador")
-        
-        json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
-        await manager.broadcast(json.dumps(json_ws), game.id)
+            # Solo si el jugador no tiene una carta de figura bloqueada, asignar nuevas cartas de figura
+            if not blocked_in_hand:
+                # Calcula la cantidad de cartas de figura en mano
+                len_figures = len(hand_figures)
+                
+                # Si necesita cartas de figura (hasta 3 en total)
+                if len_figures < 3:
+                    figures = []
+                    deck = get_figures_deck(self.db, player)
+                    cartas_necesarias = 3 - len_figures
+                    
+                    # Asignar el número máximo posible de cartas hasta completar 3
+                    cartas_a_dar = min(cartas_necesarias, len(deck))
+                    
+                    for _ in range(cartas_a_dar):
+                        figure = deck.pop(0)  # Tomar la carta del mazo
+                        put_status_figure(self.db, figure, FigureStatus.INHAND)
+                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                    
+                    # Notificar al jugador las nuevas cartas de figura en mano
+                    if figures:
+                        json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
+                        await manager.broadcast(json.dumps(json_ws), game.id)
+                # Actualizar el turno del juego
+                update_turn_game(self.db, game)
+                
+            else:
+                raise Exception("No es turno del jugador")
+            
+            json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
+            await manager.broadcast(json.dumps(json_ws), game.id)
