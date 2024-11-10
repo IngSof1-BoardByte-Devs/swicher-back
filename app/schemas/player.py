@@ -11,6 +11,7 @@ class PlayerOut(BaseModel):
     id: int
     username: str
     turn: int
+    conected: bool
 
 class Message(BaseModel):
     message: str

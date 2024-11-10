@@ -4,6 +4,7 @@ Este archivo se encarga de manejar la lógica de negocio de la aplicación. Es d
 funciones que realizan operaciones más complejas y que no están directamente relacionadas con la base de datos.
 """
 
+import asyncio
 from app.database.models import Game, Player
 from app.database.crud import *
 from app.schemas.figure import FigureOut
@@ -18,6 +19,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 import random
 import json
+from datetime import datetime, timezone
+
 
 
 class GameService:
@@ -36,8 +39,15 @@ class GameService:
         game = get_game(self.db, game_id)
         if game == None:
             raise Exception("Partida no encontrada")
-        players = [PlayerOut(username=player.username, id=player.id, turn=player.turn) for player in game.players]
-        return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, bloqued_color=game.bloqued_color, players= players)
+        players = [PlayerOut(username=player.username, id=player.id, turn=player.turn, conected=player.conected) for player in game.players]
+        if isinstance(game.time_last_turn, datetime):
+            now = datetime.now(timezone.utc)
+            if game.time_last_turn.tzinfo is None:
+                game.time_last_turn = game.time_last_turn.replace(tzinfo=timezone.utc)
+            timer_in_seconds = int((now - game.time_last_turn).total_seconds())
+        else:
+            timer_in_seconds = game.time_last_turn
+        return SingleGameOut(id=game.id, name=game.name,started=game.started, turn=game.turn, timer=timer_in_seconds , bloqued_color=game.bloqued_color, players= players)
 
 
     async def leave_game(self, player_id: int):
@@ -225,9 +235,25 @@ class GameService:
 
             # Actualizar el turno del juego
             update_turn_game(self.db, game)
+
+            # Verificar si el jugador del turno está conectado
+            player_turn = get_player_by_turn(self.db, game.turn, game)
+            if not player_turn.conected:
+                asyncio.create_task(self.await_turn(player_id))           
             
         else:
             raise Exception("No es turno del jugador")
         
         json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)
+
+
+    async def await_turn(self, player_id: int):
+        """ Espera el turno de un jugador deconectado """
+        player = get_player(self.db, player_id)
+        if not player:
+            raise Exception("Jugador no encontrado")
+        game = get_game_by_player_id(self.db, player_id)
+        await asyncio.sleep(120)
+        if player.conected == False:
+            self.change_turn(player_id)

@@ -4,6 +4,8 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.schema import CheckConstraint
 from app.utils.enums import MovementType, MovementStatus, FigureType, FigureStatus
+from datetime import datetime
+from sqlalchemy import DateTime
 import json
 
 Base = declarative_base()
@@ -18,6 +20,7 @@ class Game(Base):
     turn = Column(Integer, default=0)
     bloqued_color = Column(Integer, default=None)
     board = Column(String)
+    time_last_turn = Column(DateTime, default=None)
     
     # Relaciones
     players = relationship("Player", back_populates="game", foreign_keys='Player.game_id')

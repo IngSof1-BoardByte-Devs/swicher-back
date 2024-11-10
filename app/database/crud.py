@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.database.models import *
 from app.schemas.figure import FigUpdate
 from app.utils.enums import *
+from datetime import datetime, timezone
 
 def get_game(db: Session, game_id: int) -> Game:
     return db.query(Game).filter(Game.id == game_id).first()
@@ -65,6 +66,7 @@ def new_figure(db: Session, type: Enum, game: Game):
 def put_start_game(db: Session, game: Game):
     game.started = True
     game.turn = 1
+    game.time_last_turn = datetime.now(timezone.utc)
     db.commit()
 
 def put_asign_movement(db: Session, movement: Movement, player: Player):
@@ -106,6 +108,7 @@ def update_turn_game(db : Session, game: Game):
     turn = (game.turn + 1) % (len(game.players) + 1)
     if turn == 0: turn = 1
     game.turn = turn
+    game.time_last_turn = datetime.now(timezone.utc)
     db.commit()
 
 def get_game_by_player_id(db: Session, player_id: int) -> Game:
@@ -224,3 +227,9 @@ def update_connection_status(db, player_id: int, status: bool):
     player = get_player(db, player_id)
     player.conected = status
     db.commit()
+
+def get_player_by_turn(db, turn: int, game: Game) -> Player:
+    for player in game.players:
+        if player.turn == turn:
+            return player
+    return None
