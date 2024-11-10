@@ -13,4 +13,7 @@ async def send_message(player_id: int, message: Message, db: Session = Depends(g
         service = PlayerService(db)
         return await service.send_message(player_id, message)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        if str(e) == "Jugador no encontrado":
+            raise HTTPException(status_code=404, detail="Jugador no encontrado")
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")
