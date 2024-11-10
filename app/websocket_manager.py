@@ -1,9 +1,14 @@
 from typing import List, Dict
 from fastapi import WebSocket
+from app.database.crud import update_connection_status
+from app.database.session import get_db
+from sqlalchemy.orm import Session
 
 class ConnectionManager:
     def __init__(self):
         self.groups: Dict[int, List[List[WebSocket, int]]] = {}
+        db_gen = get_db()
+        self.db: Session = next(db_gen)
 
     async def connect(self, websocket: WebSocket, group: int, id: int):
         """
@@ -46,6 +51,7 @@ class ConnectionManager:
             for connection in self.groups[group]:
                 if connection[0] == websocket:
                     connection[0] = None
+                    update_connection_status(self.db, connection[1], False)
                     break
             
             if all(conn[0] is None for conn in self.groups[group]):
@@ -68,5 +74,6 @@ class ConnectionManager:
             for connection in self.groups[group]:
                 if connection[1] == id:
                     connection[0] = websocket
+                    update_connection_status(self.db, connection[1], True)
                     print(str(websocket) + " se reconectó al grupo " + str(group))
                     break

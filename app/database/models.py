@@ -44,6 +44,7 @@ class Player(Base):
     game_id = Column(Integer, ForeignKey('games.id', ondelete="CASCADE"), nullable=False)
     host_game_id = Column(Integer, ForeignKey('games.id'))
     turn = Column(Integer, default=0)
+    conected = Column(Boolean, default=True)
     
     # Relaciones
     game = relationship("Game", back_populates="players", foreign_keys=[game_id])    

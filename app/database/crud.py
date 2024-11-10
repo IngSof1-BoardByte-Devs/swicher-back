@@ -219,3 +219,8 @@ def get_figures_deck(db,player):
         Figure.status == FigureStatus.INDECK
     ).all()
     return figures_in_deck
+
+def update_connection_status(db, player_id: int, status: bool):
+    player = get_player(db, player_id)
+    player.conected = status
+    db.commit()
