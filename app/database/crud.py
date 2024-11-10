@@ -226,3 +226,7 @@ def get_figures_deck(db,player):
         Figure.status == FigureStatus.INDECK
     ).all()
     return figures_in_deck
+
+def update_color(db, game, color):
+    game.bloqued_color = color
+    db.commit()
