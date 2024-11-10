@@ -93,7 +93,7 @@ class FigureService:
         delete_partial_movements(self.db, game, player)
 
     
-    async def update_figure_status(self, figure_id: int, player_id: int) -> FigUpdate:
+    async def update_figure_status(self, figure_id: int, player_id: int, color: int) -> FigUpdate:
         figure = get_figure(self.db, figure_id)
         if not figure:
             raise Exception("La carta de figura no existe")
@@ -107,7 +107,11 @@ class FigureService:
             raise Exception("La carta debe estar en la mano")
         if game.turn != player.turn:
             raise Exception("No es tu turno")
-        
+        if game.bloqued_color == color:
+            raise Exception("La figura es del color prohibido")
+        if color > 3 or color < 0:
+            raise Exception("Color inválido")
+
         blocked = figure.player.id != player_id
 
         updatefig = FigUpdate(id = figure.id,
@@ -117,15 +121,17 @@ class FigureService:
                               blocked = blocked)
 
         if blocked:
-            #Funcion para bloquear figura (NO IMPLEMENTADO EN ESTE SPRINT)
+            #Funcion para bloquear figura 
             raise Exception("Función de bloquear figura no implementada")
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
         
+        update_color(self.db, game, color)
+        
         json_ws = { "event": "figure.card.used",
                    "payload": { "card_id": figure_id,"discarded": not blocked,
-                                "locked": blocked}}
+                                "locked": blocked, "color": color}}
         await manager.broadcast(json.dumps(json_ws), game.id)
     
         return updatefig
