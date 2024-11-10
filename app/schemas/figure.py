@@ -19,3 +19,4 @@ class FigureInBoard(BaseModel):
 
 class FigureDiscard(BaseModel):
     playerId: int
+    color: int
