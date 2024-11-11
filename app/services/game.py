@@ -112,7 +112,7 @@ class GameService:
             raise Exception("Partida no encontrada")
         elif game.started:
             raise Exception("Partida ya iniciada")
-        elif data.password and data.password != "":
+        elif game.password and game.password != "":
             if game.password != data.password:
                 raise Exception("Contraseña incorrecta")
         if len(game.players) >= 4:
