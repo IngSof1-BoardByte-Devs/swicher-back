@@ -142,6 +142,8 @@ class FigureService:
                     "player_id": player_id
                 }
             }
+            # #check consola ws
+            # print("WebSocket message prepared:", json.dumps(json_ws))
             await manager.broadcast(json.dumps(json_ws), game.id)
                 
 
