@@ -4,6 +4,7 @@ from app.schemas.figure import FigureOut
 from app.services.figures import FigureService
 from app.utils.enums import FigureStatus, FigureType
 
+@pytest.mark.asyncio
 class TestGetFigures:
 
     @pytest.mark.parametrize("game_id, game_exists, players_figures, expected_exception, expected_figures", [
@@ -18,7 +19,7 @@ class TestGetFigures:
         (456, False, [], Exception("Partida no encontrada"), None),
         (789, True, [[], []], None, []),
     ])
-    def test_get_figures(self, mocker, game_id, game_exists, players_figures, expected_exception, expected_figures):
+    async def test_get_figures(self, mocker, game_id, game_exists, players_figures, expected_exception, expected_figures):
         # Mock get_game function
         mock_get_game = mocker.patch("app.services.figures.get_game")
 
@@ -39,9 +40,9 @@ class TestGetFigures:
 
         if isinstance(expected_exception, Exception):
             with pytest.raises(Exception, match=str(expected_exception)) as exc_info:
-                instance.get_figures(game_id)
+                await instance.get_figures(game_id)
         else:
-            figures = instance.get_figures(game_id)
+            figures = await instance.get_figures(game_id)
             assert figures == expected_figures
 
         # Verify that get_game was called

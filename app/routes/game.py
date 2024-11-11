@@ -98,7 +98,7 @@ async def get_figure_cards(id_game: int, db: Session = Depends(get_db)):
     """
     service = FigureService(db)
     try:
-        return service.get_figures(id_game)
+        return await service.get_figures(id_game)
     except Exception as e:
         logging.error(f"Error getting figure cards: {str(e)}")
         if str(e) == "Partida no iniciada":
