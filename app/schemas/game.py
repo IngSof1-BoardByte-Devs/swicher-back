@@ -17,6 +17,7 @@ class SingleGameOut(BaseModel):
     name: str
     started: bool
     turn: int
+    timer: int
     bloqued_color: int | None
     players: List[PlayerOut]
 
