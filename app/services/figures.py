@@ -119,6 +119,18 @@ class FigureService:
                               type = figure.type,
                               discarded = not blocked,
                               blocked = blocked)
+        
+        hand_figures = get_figures_hand(self.db, player)
+        if figure.status == FigureStatus.BLOCKED and len(hand_figures) == 0:
+            json_ws = {
+                "event": "figure.card.unlocked",
+                "payload": {
+                    "card_id": figure_id,
+                    "player_id": player_id
+                }
+            }
+            await manager.broadcast(json.dumps(json_ws), game.id)
+                
 
         if blocked:
             #Funcion para bloquear figura 
