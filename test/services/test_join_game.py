@@ -17,6 +17,7 @@ class TestGameService:
         mock_game.players = ["player1"]
         mock_game.started = False
         mock_game.id = 1
+        mock_game.password = ""
         mock_get_game.return_value = mock_game
 
         mock_player = MagicMock()
@@ -50,6 +51,7 @@ class TestGameService:
         mock_game.players = ["player1", "player2", "player3"]
         mock_game.started = False
         mock_game.id = 1
+        mock_game.password = ""
         mock_get_game.return_value = mock_game
 
         mock_player = MagicMock()
@@ -88,6 +90,7 @@ class TestGameService:
         mock_game = MagicMock()
         mock_game.players = ["player1", "player2", "player3", "player4"]
         mock_game.started = False
+        mock_game.password = ""
         mock_get_game.return_value = mock_game
 
         data = JoinGame(player_name="player5",game_id=1)
@@ -100,7 +103,7 @@ class TestGameService:
         assert str(context.value) == "Partida con máximo de jugadores permitidos"
 
     async def test_join_game_not_name(self):
-        # Configuración del mock para un juego con 4 jugadores
+        # Sin nombre
 
         data = JoinGame(player_name="",game_id=1)
         instance = GameService(db=MagicMock())
@@ -113,10 +116,11 @@ class TestGameService:
 
     @patch('app.services.game.get_game')
     async def test_join_game_started_game(self, mock_get_game):
-        # Configuración del mock para un juego con 4 jugadores
+        # Configuración del mock para un juego iniciado
         mock_game = MagicMock()
         mock_game.players = ["player1", "player2", "player3"]
         mock_game.started = True
+        mock_game.password = ""
         mock_get_game.return_value = mock_game
 
         data = JoinGame(player_name="player4",game_id=1)
