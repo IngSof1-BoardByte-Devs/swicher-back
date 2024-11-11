@@ -76,11 +76,14 @@ class FigureService:
         return figures
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
+        in_hand = get_figures_hand(self.db,player)
+        if figure.status == FigureStatus.BLOCKED and len(in_hand) != 0:
+            raise Exception("El jugador no puede descartar una carta bloqueada")
         # Elimino la figura
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
-        remaining_figures = get_figures_hand(self.db, player) + (get_figures_deck(self.db, player))
+        remaining_figures = in_hand + (get_figures_deck(self.db, player))
         if len(remaining_figures) == 0:
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
@@ -88,9 +91,14 @@ class FigureService:
             delete_all_game(self.db, game)
             json_ws = { "event": "game.winner", "payload": { "player_id": player_id }}
             await manager.broadcast(json.dumps(json_ws), game_id)
-        
-        # Elimino movimientos parciales
-        delete_partial_movements(self.db, game, player)
+
+    async def block_figure(self, figure: Figure):
+        player = figure.player
+        if has_blocked_figures(self.db, player):
+            raise Exception("El jugador ya tiene una carta bloqueada")
+        elif get_figures_hand(self.db, player) < 2:
+            raise Exception("El jugador debe tener mas de dos cartas para ser bloqueado")
+        block_figure(self.db,figure)
 
     
     async def update_figure_status(self, figure_id: int, player_id: int, color: int) -> FigUpdate:
@@ -103,7 +111,7 @@ class FigureService:
 
         if player.game != game:
             raise Exception("La carta/jugador no pertenece a este juego")
-        if figure.status != FigureStatus.INHAND:
+        if figure.status == FigureStatus.INDECK:
             raise Exception("La carta debe estar en la mano")
         if game.turn != player.turn:
             raise Exception("No es tu turno")
@@ -122,12 +130,15 @@ class FigureService:
 
         if blocked:
             #Funcion para bloquear figura 
-            raise Exception("Función de bloquear figura no implementada")
+            await self.block_figure(figure,player,game)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
         
         update_color(self.db, game, color)
+
+        # Elimino movimientos parciales
+        delete_partial_movements(self.db, game, player)
         
         json_ws = { "event": "figure.card.used",
                    "payload": { "card_id": figure_id,"discarded": not blocked,
