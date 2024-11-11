@@ -13,8 +13,13 @@ from app.utils.enums import *
 def get_game(db: Session, game_id: int) -> Game:
     return db.query(Game).filter(Game.id == game_id).first()
 
-def create_game(db: Session, name: str) -> Game:
-    new_game = Game(name=name)
+def create_game(db: Session, name: str, password: str) -> Game:
+    if password == "":
+        new_game = Game(name=name)
+        print("No password")
+    else:
+        new_game = Game(name=name, password=password)
+        print("Password")
     db.add(new_game)
     db.commit()
     return new_game

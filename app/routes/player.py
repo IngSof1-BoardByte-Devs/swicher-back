@@ -28,6 +28,8 @@ async def join_game(game_data: JoinGame, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "Partida no encontrada":
             raise HTTPException(status_code=404, detail=str(e))
+        elif str(e) == "Contraseña incorrecta":
+            raise HTTPException(status_code=401, detail=str(e))
         else:
             raise HTTPException(status_code=500, detail="Internal server error")
 
