@@ -215,10 +215,11 @@ def get_figures_hand(db,player):
     return figures_in_hand
 
 def has_blocked_figures(db, player):
-    return db.query(exists().where(
+    figures_blocked = db.query(Figure).filter(
         Figure.player == player,
         Figure.status == FigureStatus.BLOCKED
-    )).scalar()
+    ).all()
+    return figures_blocked != []
     
 def get_figures_hand_game(db, game_id):
     figures_in_hand = db.query(Figure).filter(

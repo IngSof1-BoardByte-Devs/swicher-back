@@ -70,21 +70,20 @@ class FigureService:
         figures = []
         for p in game.players:
             for m in p.figures:
-                if m.status == FigureStatus.INHAND:
+                if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
                     figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
 
         return figures
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
-        in_hand = get_figures_hand(self.db,player)
-        if figure.status == FigureStatus.BLOCKED and len(in_hand) != 0:
+        if figure.status == FigureStatus.BLOCKED and len(get_figures_hand(self.db,player)) != 0:
             raise Exception("El jugador no puede descartar una carta bloqueada")
         # Elimino la figura
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
-        remaining_figures = in_hand + (get_figures_deck(self.db, player))
-        if len(remaining_figures) == 0:
+        remaining_figures = get_figures_hand(self.db,player) + (get_figures_deck(self.db, player))
+        if len(remaining_figures) == 0 and not has_blocked_figures(self.db,player):
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
             game_id = game.id
@@ -96,7 +95,7 @@ class FigureService:
         player = figure.player
         if has_blocked_figures(self.db, player):
             raise Exception("El jugador ya tiene una carta bloqueada")
-        elif get_figures_hand(self.db, player) < 2:
+        elif len(get_figures_hand(self.db, player)) < 2:
             raise Exception("El jugador debe tener mas de dos cartas para ser bloqueado")
         block_figure(self.db,figure)
 
@@ -130,7 +129,7 @@ class FigureService:
 
         if blocked:
             #Funcion para bloquear figura 
-            await self.block_figure(figure,player,game)
+            await self.block_figure(figure)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
