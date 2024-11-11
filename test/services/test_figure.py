@@ -12,8 +12,8 @@ class TestGetFigures:
              Mock(id=2, type=FigureType.TYPE2, status=FigureStatus.INDECK)],
             [Mock(id=3, type=FigureType.TYPE3, status=FigureStatus.INHAND)]
         ], None, [
-            FigureOut(player_id=1, id_figure=1, type_figure=FigureType.TYPE1),
-            FigureOut(player_id=2, id_figure=3, type_figure=FigureType.TYPE3)
+            FigureOut(player_id=1, id_figure=1, type_figure=FigureType.TYPE1, locked=False),
+            FigureOut(player_id=2, id_figure=3, type_figure=FigureType.TYPE3, locked=False)
         ]),
         (456, False, [], Exception("Partida no encontrada"), None),
         (789, True, [[], []], None, []),

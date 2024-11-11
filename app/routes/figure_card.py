@@ -23,7 +23,10 @@ async def recognize_figure(card_id: int, figure: FigureDiscard, db: Session = De
             raise HTTPException(status_code=401, detail=str(e))
         elif str(e) in ["La carta debe estar en la mano",
                         "La figura es del color prohibido",
-                        "Color inválido"]:
+                        "Color inválido",
+                        "El jugador no puede descartar una carta bloqueada",
+                        "El jugador ya tiene una carta bloqueada",
+                        "El jugador debe tener mas de dos cartas para ser bloqueado"]:
             raise HTTPException(status_code=400, detail=str(e))
         elif str(e) == "No es tu turno":
             raise HTTPException(status_code=403, detail=str(e))

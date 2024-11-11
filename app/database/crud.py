@@ -6,6 +6,7 @@ sesiones controladas de la base de datos.
 
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy import exists
 from app.database.models import *
 from app.schemas.figure import FigUpdate
 from app.utils.enums import *
@@ -213,6 +214,13 @@ def get_figures_hand(db,player):
     ).all()
     return figures_in_hand
 
+def has_blocked_figures(db, player):
+    figures_blocked = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.BLOCKED
+    ).all()
+    return figures_blocked != []
+    
 def get_figures_hand_game(db, game_id):
     figures_in_hand = db.query(Figure).filter(
         Figure.game_id == game_id,
@@ -229,4 +237,8 @@ def get_figures_deck(db,player):
 
 def update_color(db, game, color):
     game.bloqued_color = color
+    db.commit()
+
+def block_figure_status(db,figure):
+    figure.status = FigureStatus.BLOCKED
     db.commit()
