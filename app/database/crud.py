@@ -239,6 +239,6 @@ def update_color(db, game, color):
     game.bloqued_color = color
     db.commit()
 
-def block_figure(db,figure):
+def block_figure_status(db,figure):
     figure.status = FigureStatus.BLOCKED
     db.commit()
