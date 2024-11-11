@@ -60,7 +60,7 @@ class FigureService:
             for figure in selected_figures:
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
                 
-    def get_figures(self, game_id: int):
+    async def get_figures(self, game_id: int):
         game = get_game(self.db, game_id)
         if not game:
             raise Exception("Partida no encontrada")
@@ -68,11 +68,15 @@ class FigureService:
             raise Exception("Partida no iniciada")
         
         figures = []
+        payload = []
         for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
                     figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type, locked=(m.status==FigureStatus.BLOCKED)))
-
+            payload.append({"player_id": p.id, "deck": len(get_figures_deck(self.db,p))})
+        
+        json_ws = { "event": "figure.card.deck", "payload": payload}
+        await manager.broadcast(json.dumps(json_ws), game_id)
         return figures
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
@@ -85,7 +89,6 @@ class FigureService:
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
         remaining_figures = get_figures_hand(self.db,player) + (get_figures_deck(self.db, player))
-        print(remaining_figures)
         if len(remaining_figures) == 0 and not has_blocked_figures(self.db,player):
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
