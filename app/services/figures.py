@@ -132,7 +132,7 @@ class FigureService:
         
         
         hand_figures = get_figures_hand(self.db, player)
-        hand_fig_block = has_blocked_figure(self.db, player)
+        hand_fig_block = has_blocked_figures(self.db, player)
 
         if hand_fig_block and len(hand_figures) == 0:
             json_ws = {
