@@ -221,24 +221,12 @@ def has_blocked_figures(db, player):
     ).all()
     return figures_blocked != []
     
-def get_figures_hand_game(db, game_id):
+def get_figures_hand_or_bloqued_game(db, game_id):
     figures_in_hand = db.query(Figure).filter(
         Figure.game_id == game_id,
-        Figure.status == FigureStatus.INHAND
+        Figure.status.in_([FigureStatus.INHAND, FigureStatus.BLOCKED])
     ).all()
-    
-    players = get_players_in_game(db, game_id)
-    
-    for player in players:
-        figures_hand = get_figures_hand(db, player)
-        if len(figures_hand) == 0 and has_blocked_figures(db, player):
-            blocked_figures = db.query(Figure).filter(
-                Figure.player == player,
-                Figure.status == FigureStatus.BLOQUED
-            ).all()
-            if blocked_figures:
-                figures_in_hand.extend(blocked_figures)
-    
+        
     return figures_in_hand
 
 def get_blocked_figure(db: Session, player: Player) -> Figure | None:
