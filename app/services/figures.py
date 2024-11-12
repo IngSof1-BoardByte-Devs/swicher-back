@@ -153,9 +153,13 @@ class FigureService:
         if blocked:
             #Funcion para bloquear figura 
             self.block_figure(figure)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha bloqueado una figura de {figure.player.username}"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha reconocido una figura"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
         
         update_color(self.db, game, color)
 

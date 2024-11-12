@@ -84,6 +84,9 @@ class GameService:
                 delete_all_game(self.db,game)
                 json_ws = {"event": "game.winner", "payload": {"player_id": player_id,}}
                 await manager.broadcast(json.dumps(json_ws), game_id)
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha abandonado la partida"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
             
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
@@ -234,6 +237,9 @@ class GameService:
             
         else:
             raise Exception("No es turno del jugador")
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"Inició el turno de {player.username}"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
         
         json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)
