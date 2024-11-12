@@ -60,7 +60,7 @@ class FigureService:
             for figure in selected_figures:
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
                 
-    def get_figures(self, game_id: int):
+    async def get_figures(self, game_id: int):
         game = get_game(self.db, game_id)
         if not game:
             raise Exception("Partida no encontrada")
@@ -68,24 +68,26 @@ class FigureService:
             raise Exception("Partida no iniciada")
         
         figures = []
+        payload = []
         for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
                     figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
 
+            payload.append({"player_id": p.id, "deck": len(get_figures_deck(self.db,p))})
+        
+        json_ws = { "event": "figure.card.deck", "payload": payload}
+        await manager.broadcast(json.dumps(json_ws), game_id)
         return figures
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
         if figure.status == FigureStatus.BLOCKED and len(get_figures_hand(self.db,player)) != 0:
             raise Exception("El jugador no puede descartar una carta bloqueada")
         # Elimino la figura
-        print(player.figures)
-        print(get_figures_hand(self.db,player))
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
         remaining_figures = get_figures_hand(self.db,player) + (get_figures_deck(self.db, player))
-        print(remaining_figures)
         if len(remaining_figures) == 0 and not has_blocked_figures(self.db,player):
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
@@ -101,6 +103,7 @@ class FigureService:
         elif len(get_figures_hand(self.db, player)) < 2:
             raise Exception("El jugador debe tener mas de dos cartas para ser bloqueado")
         block_figure_status(self.db,figure)
+        #print(f"Bloqueo la figura del jugador {player.username}")
 
     
     async def update_figure_status(self, figure_id: int, player_id: int, color: int) -> FigUpdate:
@@ -111,6 +114,7 @@ class FigureService:
         player = get_player(self.db, player_id)
         game = figure.game
 
+        #print(f"El jugador {player.username} selecciona la figura del jugador {figure.player.username}")
         if player.game != game:
             raise Exception("La carta/jugador no pertenece a este juego")
         if figure.status == FigureStatus.INDECK:
@@ -129,19 +133,24 @@ class FigureService:
                               type = figure.type,
                               discarded = not blocked,
                               blocked = blocked)
-        
+                
+        update_color(self.db, game, color)
         if blocked:
             #Funcion para bloquear figura 
             self.block_figure(figure)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha bloqueado una figura de {figure.player.username}"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha reconocido una figura"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
         
         update_color(self.db, game, color)
+
         hand_figures = get_figures_hand(self.db, player)
         hand_fig_block = has_blocked_figures(self.db, player)
         blocked_figure = get_blocked_figure(self.db, player)
-
         if hand_fig_block and len(hand_figures) == 0:
             json_ws = {
                 "event": "figure.card.unlocked",

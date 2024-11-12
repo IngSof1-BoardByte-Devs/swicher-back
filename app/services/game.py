@@ -84,6 +84,9 @@ class GameService:
                 delete_all_game(self.db,game)
                 json_ws = {"event": "game.winner", "payload": {"player_id": player_id,}}
                 await manager.broadcast(json.dumps(json_ws), game_id)
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha abandonado la partida"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
             
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
@@ -92,7 +95,7 @@ class GameService:
             raise Exception("El jugador debe tener un nombre")
         elif not game_data.game_name:
             raise Exception("La partida debe tener un nombre")
-        game = create_game(self.db, game_data.game_name)
+        game = create_game(self.db, game_data.game_name, game_data.password)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
@@ -112,6 +115,9 @@ class GameService:
             raise Exception("Partida no encontrada")
         elif game.started:
             raise Exception("Partida ya iniciada")
+        elif game.password and game.password != "":
+            if game.password != data.password:
+                raise Exception("Contraseña incorrecta")
         if len(game.players) >= 4:
             raise Exception("Partida con máximo de jugadores permitidos")
         player = create_player(self.db, data.player_name, game)
@@ -231,6 +237,9 @@ class GameService:
             
         else:
             raise Exception("No es turno del jugador")
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"Inició el turno de {player.username}"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
         
         json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)

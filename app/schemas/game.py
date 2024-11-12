@@ -5,7 +5,7 @@ y manejar los datos que se envían y reciben en las peticiones HTTP.
 
 from pydantic import BaseModel
 from .player import PlayerOut
-from typing import List
+from typing import List, Optional
 
 class GameOut(BaseModel):
     id: int
@@ -23,6 +23,7 @@ class SingleGameOut(BaseModel):
 class CreateGame(BaseModel):
     player_name: str
     game_name: str
+    password: str
 
 class GameCreateResponse(BaseModel):
     status: str
@@ -31,6 +32,7 @@ class GameCreateResponse(BaseModel):
 class JoinGame(BaseModel):
     game_id: int
     player_name: str
+    password: Optional[str] = None
 
 class PlayerAndGame(BaseModel):
     player_id: int
