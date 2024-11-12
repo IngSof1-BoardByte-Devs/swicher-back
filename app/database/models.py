@@ -14,6 +14,7 @@ class Game(Base):
     # Atributos internos
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    password = Column(String, nullable=True)
     started = Column(Boolean, default=False)
     turn = Column(Integer, default=0)
     bloqued_color = Column(Integer, default=None)

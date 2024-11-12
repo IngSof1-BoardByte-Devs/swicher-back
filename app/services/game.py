@@ -84,6 +84,9 @@ class GameService:
                 delete_all_game(self.db,game)
                 json_ws = {"event": "game.winner", "payload": {"player_id": player_id,}}
                 await manager.broadcast(json.dumps(json_ws), game_id)
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha abandonado la partida"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
             
 
     async def create_game(self, game_data: CreateGame) -> PlayerAndGame:
@@ -92,7 +95,7 @@ class GameService:
             raise Exception("El jugador debe tener un nombre")
         elif not game_data.game_name:
             raise Exception("La partida debe tener un nombre")
-        game = create_game(self.db, game_data.game_name)
+        game = create_game(self.db, game_data.game_name, game_data.password)
         player = create_player(self.db, game_data.player_name, game)
         game.host = player
         self.db.commit()
@@ -112,6 +115,9 @@ class GameService:
             raise Exception("Partida no encontrada")
         elif game.started:
             raise Exception("Partida ya iniciada")
+        elif game.password and game.password != "":
+            if game.password != data.password:
+                raise Exception("Contraseña incorrecta")
         if len(game.players) >= 4:
             raise Exception("Partida con máximo de jugadores permitidos")
         player = create_player(self.db, data.player_name, game)
@@ -169,6 +175,7 @@ class GameService:
 
 
     async def change_turn(self, player_id: int):
+        print("Se cambia el turno del jugador ", player_id)
         """ Cambia el turno de un jugador """
         # Obtener el jugador
         player = get_player(self.db, player_id)
@@ -203,31 +210,36 @@ class GameService:
                     deck.remove(move)
                     put_asign_movement(self.db, move, player)
 
-            #Restablece cartas de figura si le faltan
-            len_cards = len(get_figures_hand(self.db,player))
-            if len_cards < 3:
-                figures = []
-                #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
-                deck = get_figures_deck(self.db,player)
-                if (3-len_cards) > len(deck):
-                    for figure in deck: 
-                        put_status_figure(self.db, figure, FigureStatus.INHAND)
-                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
-                else:
-                    for _ in range(3-len_cards):
-                        figure = random.choice(deck)
-                        deck.remove(figure)
-                        put_status_figure(self.db, figure, FigureStatus.INHAND)
-                        figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
-                        
-                json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
-                await manager.broadcast(json.dumps(json_ws), game.id)
+            #Restablece cartas de figura si le faltan (si es que no esta bloqueado)
+            if not has_blocked_figures(self.db, player):
+                len_cards = len(get_figures_hand(self.db,player))
+                if len_cards < 3:
+                    figures = []
+                    #Me fijo si puede obtener todas las cartas que necesita u obtiene todas directamente
+                    deck = get_figures_deck(self.db,player)
+                    if (3-len_cards) > len(deck):
+                        for figure in deck: 
+                            put_status_figure(self.db, figure, FigureStatus.INHAND)
+                            figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                    else:
+                        for _ in range(3-len_cards):
+                            figure = random.choice(deck)
+                            deck.remove(figure)
+                            put_status_figure(self.db, figure, FigureStatus.INHAND)
+                            figures.append(FigureOut(player_id=player_id, id_figure=figure.id, type_figure=figure.type.value))
+                
+                    if figures != []:
+                        json_ws = {"event": "figure.card.added", "payload": [figure.model_dump() for figure in figures]}
+                        await manager.broadcast(json.dumps(json_ws), game.id)
 
             # Actualizar el turno del juego
             update_turn_game(self.db, game)
             
         else:
             raise Exception("No es turno del jugador")
+        
+        json_action_event = {"event": "message.action", "payload": {"message": f"Inició el turno de {player.username}"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
         
         json_ws = {"event": "game.turn", "payload": {"turn": game.turn}}
         await manager.broadcast(json.dumps(json_ws), game.id)

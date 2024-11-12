@@ -60,7 +60,7 @@ class FigureService:
             for figure in selected_figures:
                 put_status_figure(self.db, figure, FigureStatus.INHAND)
                 
-    def get_figures(self, game_id: int):
+    async def get_figures(self, game_id: int):
         game = get_game(self.db, game_id)
         if not game:
             raise Exception("Partida no encontrada")
@@ -68,32 +68,45 @@ class FigureService:
             raise Exception("Partida no iniciada")
         
         figures = []
+        payload = []
         for p in game.players:
             for m in p.figures:
-                if m.status == FigureStatus.INHAND:
+                if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
                     figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
 
+            payload.append({"player_id": p.id, "deck": len(get_figures_deck(self.db,p))})
+        
+        json_ws = { "event": "figure.card.deck", "payload": payload}
+        await manager.broadcast(json.dumps(json_ws), game_id)
         return figures
     
     async def discard_figure(self,figure: Figure, player: Player, game: Game):
+        if figure.status == FigureStatus.BLOCKED and len(get_figures_hand(self.db,player)) != 0:
+            raise Exception("El jugador no puede descartar una carta bloqueada")
         # Elimino la figura
         delete_figure(self.db, figure)
         
         # Verificar si el jugador ha descartado todas sus cartas de figura
-        remaining_figures = get_figures_hand(self.db, player) + (get_figures_deck(self.db, player))
-        if len(remaining_figures) == 0:
+        remaining_figures = get_figures_hand(self.db,player) + (get_figures_deck(self.db, player))
+        if len(remaining_figures) == 0 and not has_blocked_figures(self.db,player):
             # Si no quedan más cartas en la mano, el jugador gana
             player_id = player.id
             game_id = game.id
             delete_all_game(self.db, game)
             json_ws = { "event": "game.winner", "payload": { "player_id": player_id }}
             await manager.broadcast(json.dumps(json_ws), game_id)
-        
-        # Elimino movimientos parciales
-        delete_partial_movements(self.db, game, player)
+
+    def block_figure(self, figure: Figure):
+        player = figure.player
+        if has_blocked_figures(self.db, player):
+            raise Exception("El jugador ya tiene una carta bloqueada")
+        elif len(get_figures_hand(self.db, player)) < 2:
+            raise Exception("El jugador debe tener mas de dos cartas para ser bloqueado")
+        block_figure_status(self.db,figure)
+        #print(f"Bloqueo la figura del jugador {player.username}")
 
     
-    async def update_figure_status(self, figure_id: int, player_id: int) -> FigUpdate:
+    async def update_figure_status(self, figure_id: int, player_id: int, color: int) -> FigUpdate:
         figure = get_figure(self.db, figure_id)
         if not figure:
             raise Exception("La carta de figura no existe")
@@ -101,13 +114,18 @@ class FigureService:
         player = get_player(self.db, player_id)
         game = figure.game
 
+        #print(f"El jugador {player.username} selecciona la figura del jugador {figure.player.username}")
         if player.game != game:
             raise Exception("La carta/jugador no pertenece a este juego")
-        if figure.status != FigureStatus.INHAND:
+        if figure.status == FigureStatus.INDECK:
             raise Exception("La carta debe estar en la mano")
         if game.turn != player.turn:
             raise Exception("No es tu turno")
-        
+        if game.bloqued_color == color:
+            raise Exception("La figura es del color prohibido")
+        if color > 3 or color < 0:
+            raise Exception("Color inválido")
+
         blocked = figure.player.id != player_id
 
         updatefig = FigUpdate(id = figure.id,
@@ -115,17 +133,41 @@ class FigureService:
                               type = figure.type,
                               discarded = not blocked,
                               blocked = blocked)
-
+                
         if blocked:
-            #Funcion para bloquear figura (NO IMPLEMENTADO EN ESTE SPRINT)
-            raise Exception("Función de bloquear figura no implementada")
+            #Funcion para bloquear figura 
+            self.block_figure(figure)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha bloqueado una figura de {figure.player.username}"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
+            json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha reconocido una figura"}}
+            await manager.broadcast(json.dumps(json_action_event), game.id)
+        
+        update_color(self.db, game, color)
+
+        hand_figures = get_figures_hand(self.db, player)
+        hand_fig_block = has_blocked_figures(self.db, player)
+        blocked_figure = get_blocked_figure(self.db, player)
+        if hand_fig_block and len(hand_figures) == 0:
+            json_ws = {
+                "event": "figure.card.unlocked",
+                "payload": {
+                    "card_id": blocked_figure.id,
+                    "player_id": player_id
+                }
+            }
+            # check consola ws
+            print("WebSocket message prepared:", json.dumps(json_ws))
+            await manager.broadcast(json.dumps(json_ws), game.id)
+
+        # Elimino movimientos parciales
+        delete_partial_movements(self.db, game, player)
         
         json_ws = { "event": "figure.card.used",
                    "payload": { "card_id": figure_id,"discarded": not blocked,
-                                "locked": blocked}}
+                                "locked": blocked, "color": color}}
         await manager.broadcast(json.dumps(json_ws), game.id)
     
         return updatefig

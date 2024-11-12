@@ -1,96 +1,89 @@
-import json
 from unittest.mock import MagicMock
 import pytest
 
 from app.services.game import GameService
-
-"""Concentrado en ver como quedan los turnos despues de que abandone el jugador"""
+from app.database.crud import update_turn_game
 
 @pytest.mark.asyncio
-class TestLeaveGame:
+class TestChangeTurn:
+    def turn(self, id):
+        turn = id
+        if id >= 3 and id <= 5:
+            turn = id - 2
+        elif id >= 6 and id <= 9:
+            turn = id - 5
+        elif id >= 10:
+            turn = 1
+        return turn
+    
     def mock_get_player(self, db, player_id):
-        return next((p for p in db.players if p.id == player_id), None)
+        player = None
+        if player_id in range(1, 12):
+            player = MagicMock(id=player_id)
+            player.turn = self.turn(player_id) if player_id != 11 else 2
+        return player
     
     def mock_get_game_by_player_id(self, db, player_id):
-        return next((g for g in db.games if self.mock_get_player(db,player_id) in g.players), None)
+        game = None
+        players = [[1, 2], [3, 4, 5], [6, 7, 8, 9], [10, 20], [11, 13]]
+        for i in range(len(players)):
+            if player_id in players[i]:
+                game = MagicMock(id=i+1, players=players[i], started=(player_id != 10))
+                game.turn = self.turn(player_id)
+        return game
 
-    def mock_delete(self,db,mock):
-        if mock.type == "player":
-            db.players.remove(mock)
-        elif mock.type == "game":
-            db.games.remove(mock)
-
-    def mock_manager_broadcast(self,ws,json_ws):
-        ws.result = json_ws
-
-
-    @pytest.mark.parametrize("player_id, started, turn, expected_turn, exception, expected_broadcast", [
-        #Caso lobby sin ser el host
-        (2,False,0,0,None,
-         json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player2"}})),
-        #Caso lobby siendo el host
-        (1,False,0,None,None,
-         json.dumps({"event": "game.cancelled", "payload": {"game_id": 1}})),
-        #Caso game ultimo jugador sin ser su turno
-        (4,True,3,3,None,
-         json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player4"}})),
-        #Caso error ultimo jugador en su turnp
-        (4,True,4,None,Exception("No puede abandonar el jugador de turno"),None),
-        #Caso game siendo primer jugador sin ser turno
-        (1,True,2,1,None,
-         json.dumps({"event": "player.left", "payload": {"game_id": 1, "username": "player1"}})),
-        #Caso game quede un solo jugador
-        (5,True,2,None,None,
-         json.dumps({"event": "game.winner", "payload": {"player_id": 6}})),
-        #Caso que no encuentra al jugador
-        (7,None,None,None,Exception("Jugador no encontrado"),None),
+    @pytest.mark.parametrize("player_id, expected_return", [
+        # Todos los casos con dos jugadores
+        (1, None), (2, None),
+        # Todos los casos con tres jugadores
+        (3, None), (4, None), (5, None),
+        # Todos los casos con cuatro jugadores
+        (6, None), (7, None), (8, None), (9, None),
+        # Caso error jugador no encontrado
+        (12, Exception("Jugador no encontrado")),
+        # Caso error partida no iniciada
+        (10, Exception("Partida no iniciada")),
+        # Caso error no es turno del jugador
+        (11, Exception("No es turno del jugador")),
     ])
-    async def test_leave_game(self, mocker, player_id, started, turn, expected_turn, exception, expected_broadcast):
-
-        #Instancia db
-        db = MagicMock(players=[],games=[],ws=MagicMock(result=None))
-        #Jugadores
-        db.players.extend(MagicMock(id=i,username=f"player{i}",type="player",movements=[],figures=[]) for i in range(1,7))
-        for i in range(4): db.players[i].turn = i+1
-        for i in range(4,6): db.players[i].turn = i-3
-        #Juegos
-        db.games.extend(MagicMock(id=i,turn=turn,started=started,players=[],type="game", movements=[],
-                                  figures=[],partial_movements=[]) for i in range(1,3))
-        db.games[0].players.extend(db.players[i] for i in range(4))
-        db.games[0].host = db.players[0]
-        db.games[1].players.extend(db.players[i] for i in range(4,6))
-        db.games[1].host = db.players[4]
-
-        #Mock cruds
+    async def test_change_turn(self, mocker, player_id, expected_return):
+        # Mock cruds
         mock_get_player = mocker.patch("app.services.game.get_player")
         mock_get_game_by_player_id = mocker.patch("app.services.game.get_game_by_player_id")
         mock_manager_broadcast = mocker.patch("app.services.game.manager.broadcast")
-
-        #Config cruds
+        mock_parcial_movements_exist = mocker.patch("app.services.game.parcial_movements_exist")
+        mock_get_figures_hand = mocker.patch("app.services.game.get_figures_hand")
+        mock_get_moves_hand = mocker.patch("app.services.game.get_moves_hand")
+        
+        # Config cruds
         mock_get_player.side_effect = lambda db, player_id: self.mock_get_player(db, player_id)
-        mock_get_game_by_player_id.side_effect = lambda db, player_id: self.mock_get_game_by_player_id(
-            db, player_id)
-        mock_manager_broadcast.side_effect = lambda json_ws, _: self.mock_manager_broadcast(db.ws,json_ws)
-        db.delete.side_effect = lambda mock: self.mock_delete(db,mock)
-
-        #Instancia
+        mock_get_game_by_player_id.side_effect = lambda db, player_id: self.mock_get_game_by_player_id(db, player_id)
+        mock_parcial_movements_exist.return_value = False
+        mock_get_figures_hand.return_value = [1, 2, 3]
+        mock_get_moves_hand.return_value = [1, 2, 3]
+        
+        # Instancia db
+        db = MagicMock()
+        db.commit.return_value = None
         instance = GameService(db)
-        if isinstance(exception, Exception):
-            with pytest.raises(Exception, match=str(exception)):
-                await instance.leave_game(player_id)
-        else:
-            await instance.leave_game(player_id)
 
-            #Verificaciones
-            #Caso de juegos no eliminados
-            if expected_turn is not None:
-                game = db.games[0]
-                assert game.turn == expected_turn
-                assert len(game.players) == 3
-                assert len(db.players) == 5
-                if started: assert all(game.players[i].turn == i+1 for i in range(len(game.players)))
-            #Caso de juego eliminado
-            else:
-                assert len(db.games) == 1
-            #Websocket
-            assert db.ws.result == expected_broadcast
+        if isinstance(expected_return, Exception):
+            with pytest.raises(Exception, match=str(expected_return)):
+                await instance.change_turn(player_id)
+
+            # Verificaciones
+            mock_manager_broadcast.assert_not_called()
+        else:
+            await instance.change_turn(player_id)
+
+            # Verificaciones
+            player = self.mock_get_player(db, player_id)
+            game = self.mock_get_game_by_player_id(db, player_id)
+            assert player.turn == game.turn
+            update_turn_game(db, game)
+            assert player.turn != game.turn
+            assert game.turn == player.turn + 1 or game.turn == 1
+
+            mock_get_player.assert_called_once_with(instance.db, player_id)
+            mock_get_game_by_player_id.assert_called_once_with(instance.db, player_id)
+            assert mock_manager_broadcast.call_count == 2

@@ -12,34 +12,34 @@ class TestCreateGame:
         game.players.append(new_player)
         return new_player
     
-    def mock_create_game(self, db, game_name):
-        new_game = MagicMock(id=1,players=[])
+    def mock_create_game(self, db, game_name, password):
+        new_game = MagicMock(id=1, players=[])
         new_game.name = game_name
+        new_game.password = password
         return new_game
 
     @pytest.mark.parametrize("game_data, expected_return", [
-        #Caso normal
-        (CreateGame(player_name="player",game_name="game"),
-         PlayerAndGame(player_id=1,game_id=1)),
-        #Caso error falta nombre de jugador
-        (CreateGame(player_name="",game_name="game"),
+        # Caso normal
+        (CreateGame(player_name="player", game_name="game", password="password"),
+         PlayerAndGame(player_id=1, game_id=1)),
+        # Caso error falta nombre de jugador
+        (CreateGame(player_name="", game_name="game", password="password"),
          Exception("El jugador debe tener un nombre")),
-        #Caso error falta nombre de partida
-        (CreateGame(player_name="player",game_name=""),
+        # Caso error falta nombre de partida
+        (CreateGame(player_name="player", game_name="", password="password"),
          Exception("La partida debe tener un nombre")),
-
     ])
     async def test_create_game(self, mocker, game_data, expected_return):
-        #Mock cruds
+        # Mock cruds
         mock_create_game = mocker.patch("app.services.game.create_game")
         mock_create_player = mocker.patch("app.services.game.create_player")
         mock_manager_broadcast = mocker.patch("app.services.game.manager.broadcast")
 
-        #Config cruds
-        mock_create_player.side_effect = lambda db, player_name, game: self.mock_create_player(db,player_name, game)
-        mock_create_game.side_effect = lambda db, game_name: self.mock_create_game(db,game_name)
+        # Config cruds
+        mock_create_player.side_effect = lambda db, player_name, game: self.mock_create_player(db, player_name, game)
+        mock_create_game.side_effect = lambda db, game_name, password: self.mock_create_game(db, game_name, password)
         
-        #Instancia db
+        # Instancia db
         db = MagicMock()
         db.commit.return_value = None
         instance = GameService(db)
@@ -50,12 +50,12 @@ class TestCreateGame:
             result = await instance.create_game(game_data)
             assert result == expected_return
 
-        #Verificaciones
+        # Verificaciones
         if isinstance(expected_return, Exception):
             mock_create_game.assert_not_called()
             mock_create_player.assert_not_called()
             mock_manager_broadcast.assert_not_called()
         else:
-            mock_create_game.assert_called_once_with(instance.db, game_data.game_name)
+            mock_create_game.assert_called_once_with(instance.db, game_data.game_name, game_data.password)
             mock_create_player.assert_called()
             mock_manager_broadcast.assert_called()

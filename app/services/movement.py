@@ -72,6 +72,9 @@ class MoveService:
         update_parcial_movement(self.db, game, move, x1, x2, y1, y2)
         swap_board(self.db, game, x1, x2, y1, y2)
 
+        json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha jugado una carta de movimiento"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
+
         json_ws = {"event": "movement.card.used", "payload": {"card_id": move.id,"position1": index1,"position2": index2,"type":move.type.value}}
         await manager.broadcast(json.dumps(json_ws), game.id)
 
@@ -116,6 +119,9 @@ class MoveService:
             swap_board(self.db, game, mov.x1, mov.x2, mov.y1, mov.y2)
         
         revert_partial_movements(self.db, game, player)
+
+        json_action_event = {"event": "message.action", "payload": {"message": f"{player.username} ha revertido movimientos"}}
+        await manager.broadcast(json.dumps(json_action_event), game.id)
 
         json_ws = {"event": "moves.cancelled", "payload": moves}
         await manager.broadcast(json.dumps(json_ws), game.id)

@@ -128,6 +128,10 @@ class BoardService:
             Función principal que obtiene las figuras de un tablero
         '''
         game = get_game(self.db, id_game)
+        figures_in_hand = get_figures_hand_or_bloqued_game(self.db, game.id)
+
+        values_in_hand = {fig.type: fig.type.name.lower().replace('type', 'fig') for fig in figures_in_hand}
+        
         board = game.board_matrix
         figures = self.get_valid_figures(board)
         figures = self.normalize_figures(figures)
@@ -137,9 +141,11 @@ class BoardService:
         for figure, indices in figures:
             figure_int = self.array_to_int(figure)
             figure_name = fig_values.get(int(figure_int), "Unknown")
-            print(f"Figura: {figure_name}, Índices originales: {indices}")
+            """ print(f"Figura: {figure_name}, Índices originales: {indices}") """
             all_figures.append({"type": figure_name, "indexes": indices})  # Añadir figura y sus índices a la lista
 
+        # Descartar las que no están en fig_values
+        all_figures = [fig for fig in all_figures if fig["type"] != "Unknown" and fig["type"] in values_in_hand.values()]
+
         json_ws = {"event": "game.figures", "payload": all_figures}  # Incluir todas las figuras en el payload
-        print(json_ws)
         await manager.broadcast(json.dumps(json_ws), game.id)

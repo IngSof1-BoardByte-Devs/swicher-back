@@ -6,6 +6,7 @@ sesiones controladas de la base de datos.
 
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy import exists
 from app.database.models import *
 from app.schemas.figure import FigUpdate
 from app.utils.enums import *
@@ -13,8 +14,13 @@ from app.utils.enums import *
 def get_game(db: Session, game_id: int) -> Game:
     return db.query(Game).filter(Game.id == game_id).first()
 
-def create_game(db: Session, name: str) -> Game:
-    new_game = Game(name=name)
+def create_game(db: Session, name: str, password: str) -> Game:
+    if password == "":
+        new_game = Game(name=name)
+        print("No password")
+    else:
+        new_game = Game(name=name, password=password)
+        print("Password")
     db.add(new_game)
     db.commit()
     return new_game
@@ -213,9 +219,45 @@ def get_figures_hand(db,player):
     ).all()
     return figures_in_hand
 
+def has_blocked_figures(db, player):
+    figures_blocked = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.BLOCKED
+    ).all()
+    return figures_blocked != []
+
+def get_figures_hand(db,player):
+    figures_in_hand = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INHAND
+    ).all()
+    return figures_in_hand
+    
+def get_figures_hand_or_bloqued_game(db, game_id):
+    figures_in_hand = db.query(Figure).filter(
+        Figure.game_id == game_id,
+        Figure.status.in_([FigureStatus.INHAND, FigureStatus.BLOCKED])
+    ).all()
+        
+    return figures_in_hand
+
+def get_blocked_figure(db: Session, player: Player) -> Figure | None:
+    return db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.BLOCKED
+    ).first()
+
 def get_figures_deck(db,player):
     figures_in_deck = db.query(Figure).filter(
         Figure.player == player,
         Figure.status == FigureStatus.INDECK
     ).all()
     return figures_in_deck
+
+def update_color(db, game, color):
+    game.bloqued_color = color
+    db.commit()
+
+def block_figure_status(db,figure):
+    figure.status = FigureStatus.BLOCKED
+    db.commit()

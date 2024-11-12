@@ -50,8 +50,8 @@ class TestGetMovements:
             assert response.json() == {"detail": expected_exception.detail}
         else:
             assert response.status_code == 200
-            assert response.json() == [{"player_id": 1, "id_figure": 1, "type_figure": FigureType.TYPE1.value},
-                                        {"player_id": 1, "id_figure": 2, "type_figure": FigureType.TYPE2.value},
-                                        {"player_id": 1, "id_figure": 7, "type_figure": FigureType.TYPE7.value},
-                                        {"player_id": 2, "id_figure": 9, "type_figure": FigureType.TYPE9.value}
+            assert response.json() == [{"player_id": 1, "id_figure": 1, "type_figure": FigureType.TYPE1.value,},
+                                        {"player_id": 1, "id_figure": 2, "type_figure": FigureType.TYPE2.value,},
+                                        {"player_id": 1, "id_figure": 7, "type_figure": FigureType.TYPE7.value,},
+                                        {"player_id": 2, "id_figure": 9, "type_figure": FigureType.TYPE9.value,}
                                         ]
