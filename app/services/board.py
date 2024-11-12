@@ -128,7 +128,7 @@ class BoardService:
             Función principal que obtiene las figuras de un tablero
         '''
         game = get_game(self.db, id_game)
-        figures_in_hand = get_figures_hand_game(self.db, game.id)
+        figures_in_hand = get_figures_hand_or_bloqued_game(self.db, game.id)
 
         values_in_hand = {fig.type: fig.type.name.lower().replace('type', 'fig') for fig in figures_in_hand}
         

@@ -225,13 +225,27 @@ def has_blocked_figures(db, player):
         Figure.status == FigureStatus.BLOCKED
     ).all()
     return figures_blocked != []
-    
-def get_figures_hand_game(db, game_id):
+
+def get_figures_hand(db,player):
     figures_in_hand = db.query(Figure).filter(
-        Figure.game_id == game_id,
+        Figure.player == player,
         Figure.status == FigureStatus.INHAND
     ).all()
     return figures_in_hand
+    
+def get_figures_hand_or_bloqued_game(db, game_id):
+    figures_in_hand = db.query(Figure).filter(
+        Figure.game_id == game_id,
+        Figure.status.in_([FigureStatus.INHAND, FigureStatus.BLOCKED])
+    ).all()
+        
+    return figures_in_hand
+
+def get_blocked_figure(db: Session, player: Player) -> Figure | None:
+    return db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.BLOCKED
+    ).first()
 
 def get_figures_deck(db,player):
     figures_in_deck = db.query(Figure).filter(

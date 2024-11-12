@@ -72,7 +72,8 @@ class FigureService:
         for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
-                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type, locked=(m.status==FigureStatus.BLOCKED)))
+                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
+
             payload.append({"player_id": p.id, "deck": len(get_figures_deck(self.db,p))})
         
         json_ws = { "event": "figure.card.deck", "payload": payload}
@@ -132,24 +133,7 @@ class FigureService:
                               type = figure.type,
                               discarded = not blocked,
                               blocked = blocked)
-        
-        
-        hand_figures = get_figures_hand(self.db, player)
-        hand_fig_block = has_blocked_figures(self.db, player)
-
-        if hand_fig_block and len(hand_figures) == 0:
-            json_ws = {
-                "event": "figure.card.unlocked",
-                "payload": {
-                    "card_id": figure_id,
-                    "player_id": player_id
-                }
-            }
-            # #check consola ws
-            # print("WebSocket message prepared:", json.dumps(json_ws))
-            await manager.broadcast(json.dumps(json_ws), game.id)
                 
-
         if blocked:
             #Funcion para bloquear figura 
             self.block_figure(figure)
@@ -162,6 +146,21 @@ class FigureService:
             await manager.broadcast(json.dumps(json_action_event), game.id)
         
         update_color(self.db, game, color)
+
+        hand_figures = get_figures_hand(self.db, player)
+        hand_fig_block = has_blocked_figures(self.db, player)
+        blocked_figure = get_blocked_figure(self.db, player)
+        if hand_fig_block and len(hand_figures) == 0:
+            json_ws = {
+                "event": "figure.card.unlocked",
+                "payload": {
+                    "card_id": blocked_figure.id,
+                    "player_id": player_id
+                }
+            }
+            # check consola ws
+            print("WebSocket message prepared:", json.dumps(json_ws))
+            await manager.broadcast(json.dumps(json_ws), game.id)
 
         # Elimino movimientos parciales
         delete_partial_movements(self.db, game, player)
