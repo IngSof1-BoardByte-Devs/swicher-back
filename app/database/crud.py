@@ -220,6 +220,13 @@ def has_blocked_figures(db, player):
         Figure.status == FigureStatus.BLOCKED
     ).all()
     return figures_blocked != []
+
+def get_figures_hand(db,player):
+    figures_in_hand = db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.INHAND
+    ).all()
+    return figures_in_hand
     
 def get_figures_hand_or_bloqued_game(db, game_id):
     figures_in_hand = db.query(Figure).filter(
