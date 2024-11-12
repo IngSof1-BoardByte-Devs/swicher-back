@@ -134,7 +134,6 @@ class FigureService:
                               discarded = not blocked,
                               blocked = blocked)
                 
-        update_color(self.db, game, color)
         if blocked:
             #Funcion para bloquear figura 
             self.block_figure(figure)
