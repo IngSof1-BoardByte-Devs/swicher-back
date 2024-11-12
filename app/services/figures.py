@@ -71,7 +71,7 @@ class FigureService:
         for p in game.players:
             for m in p.figures:
                 if m.status == FigureStatus.INHAND or m.status == FigureStatus.BLOCKED:
-                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type, locked=(m.status==FigureStatus.BLOCKED)))
+                    figures.append(FigureOut(player_id=p.id, id_figure=m.id, type_figure=m.type))
 
         return figures
     
