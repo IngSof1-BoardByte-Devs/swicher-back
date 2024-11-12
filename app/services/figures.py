@@ -133,18 +133,20 @@ class FigureService:
         
         hand_figures = get_figures_hand(self.db, player)
         hand_fig_block = has_blocked_figures(self.db, player)
+        blocked_figure = get_blocked_figure(self.db, player)
 
-        if hand_fig_block and len(hand_figures) == 0:
+        if hand_fig_block and len(hand_figures) == 1:
             json_ws = {
                 "event": "figure.card.unlocked",
                 "payload": {
-                    "card_id": figure_id,
+                    "card_id": blocked_figure.id,
                     "player_id": player_id
                 }
             }
             # #check consola ws
-            # print("WebSocket message prepared:", json.dumps(json_ws))
+            print("WebSocket message prepared:", json.dumps(json_ws))
             await manager.broadcast(json.dumps(json_ws), game.id)
+                
                 
 
         if blocked:

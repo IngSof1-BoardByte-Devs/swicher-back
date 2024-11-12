@@ -228,6 +228,12 @@ def get_figures_hand_game(db, game_id):
     ).all()
     return figures_in_hand
 
+def get_blocked_figure(db: Session, player: Player) -> Figure | None:
+    return db.query(Figure).filter(
+        Figure.player == player,
+        Figure.status == FigureStatus.BLOCKED
+    ).first()
+
 def get_figures_deck(db,player):
     figures_in_deck = db.query(Figure).filter(
         Figure.player == player,
