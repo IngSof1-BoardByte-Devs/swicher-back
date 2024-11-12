@@ -151,7 +151,7 @@ class FigureService:
 
         if blocked:
             #Funcion para bloquear figura 
-            await self.block_figure(figure)
+            self.block_figure(figure)
         else:
             #Funcion para descartar figura propia
             await self.discard_figure(figure,player,game)
